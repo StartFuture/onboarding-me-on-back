@@ -185,7 +185,7 @@ CREATE TABLE IF NOT EXISTS Tool (
   name VARCHAR(255) NOT NULL,
   game_id BIGINT NOT NULL,
   category_id BIGINT NOT NULL,
-  FOREIGN KEY (game_id) REFERENCES Medal (id),
+  FOREIGN KEY (game_id) REFERENCES Game (id),
   FOREIGN KEY (category_id) REFERENCES CategoryTool (id),
   PRIMARY KEY (id)
 );
