@@ -1,4 +1,6 @@
 from app.routers.enterprise import router as router_enterprise
+from app.routers.tool import router as router_tool
+from app.routers.quiz import router as router_quiz
 
 
 from fastapi import FastAPI
@@ -27,3 +29,5 @@ app.add_middleware(
 
 
 app.include_router(router=router_enterprise)
+app.include_router(router=router_tool)
+app.include_router(router=router_quiz)
