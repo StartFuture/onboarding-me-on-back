@@ -159,7 +159,7 @@ CREATE TABLE IF NOT EXISTS Quiz (
   question VARCHAR(255) NOT NULL,
   quiz_type ENUM('culture','principle') NOT NULL,
   game_id BIGINT NOT NULL,
-  FOREIGN KEY (game_id) REFERENCES Medal (id),
+  FOREIGN KEY (game_id) REFERENCES Game (id),
   PRIMARY KEY (id)
 );
 
