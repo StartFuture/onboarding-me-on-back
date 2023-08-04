@@ -1,4 +1,5 @@
 from app.dao.dao import connect_database
+from app.schemas.tool import Tool
 
 def select_tool(id: int):
     
@@ -21,3 +22,25 @@ def select_tool(id: int):
     connection.close()
 
     return tool_list
+
+def insert_tool(tool: Tool):
+
+    connection, cursor = connect_database()
+
+    query = f"""
+    INSERT INTO Tool 
+    (link_download, name, score, game_id, category_id)
+    VALUES
+    ('{tool.link_download}', '{tool.name}', {tool.score}, 1, 1);
+    """
+
+    cursor.execute(query)
+    connection.commit()
+
+    query = f'SELECT * FROM Tool WHERE name = "{tool.name}"'
+
+    cursor.execute(query)
+    tool_result = cursor.fetchone()
+    connection.close()
+
+    return tool_result

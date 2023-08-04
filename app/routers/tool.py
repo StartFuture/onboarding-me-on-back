@@ -1,4 +1,5 @@
-from app.dao.dao_tools import select_tool
+from app.schemas.tool import Tool
+from app.dao.dao_tools import select_tool, insert_tool
 
 from fastapi import APIRouter,status, HTTPException
 from fastapi.responses import JSONResponse
@@ -20,3 +21,14 @@ def get_tool(company_id: int):
         return JSONResponse(status_code=status.HTTP_200_OK, content=tool)
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "This company don't have tools!"})
+
+
+@router.post("/")
+def register_tool(tool: Tool):
+
+    tool_registered = insert_tool(tool)
+
+    if tool_registered:
+        return JSONResponse(status_code=status.HTTP_200_OK, content=tool_registered)
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "The tool has not been registered!"})
