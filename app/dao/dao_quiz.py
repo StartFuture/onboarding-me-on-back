@@ -39,7 +39,7 @@ def insert_quiz(quiz: Quiz):
     cursor.execute(query)
     connection.commit()
 
-    query = f'SELECT * FROM Quiz WHERE title = "{quiz.title}"'
+    query = f'SELECT title FROM Quiz WHERE title = "{quiz.title}"'
 
     cursor.execute(query)
     quiz_result = cursor.fetchone()
@@ -62,7 +62,7 @@ def insert_alternative(alternative: Alternative):
     cursor.execute(query)
     connection.commit()
     
-    query = f'SELECT * FROM Alternative WHERE alternative_text = "{alternative.text}"'
+    query = f'SELECT alternative_text FROM Alternative WHERE alternative_text = "{alternative.text}"'
 
     cursor.execute(query)
     alternative_result = cursor.fetchone()
@@ -75,18 +75,17 @@ def update_quiz(quiz: Quiz):
     
     connection, cursor = connect_database()
     
-    
     query = f"""
     UPDATE Quiz 
     SET 
     link_video = '{quiz.link_video}', score = '{quiz.score}', title = '{quiz.title}', question = '{quiz.question}', quiz_type = '{quiz.quiz_type}'
-    WHERE id = 2;
+    WHERE id = 4;
     """
 
     cursor.execute(query)
     connection.commit()
  
-    query = f'SELECT * FROM Quiz WHERE title = "{quiz.title}"'
+    query = f'SELECT title FROM Quiz WHERE title = "{quiz.title}"'
  
     cursor.execute(query)
     quiz_result = cursor.fetchone()
@@ -108,7 +107,7 @@ def update_alternative(alternative: Alternative):
     cursor.execute(query)
     connection.commit()
     
-    query = f'SELECT * FROM Alternative WHERE alternative_text = "{alternative.text}"'
+    query = f'SELECT alternative_text FROM Alternative WHERE alternative_text = "{alternative.text}"'
 
     cursor.execute(query)
     alternative_result = cursor.fetchone()

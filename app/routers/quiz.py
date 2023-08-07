@@ -14,17 +14,6 @@ router = APIRouter(
         )
 
 
-def validate_quiz_type(quiz: Quiz):
-    
-    if quiz.quiz_type != "culture" and quiz.quiz_type != "principle":
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "The quiz_type must be: 'culture' or 'principle'!"})
-
-def validate_alternative_isanswer(alternative: Alternative):
-   
-    if alternative.is_answer != 1 and alternative.is_answer != 0:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "The is_answer must be: '0' or '1'!"})
-
-
 
 @router.get("/{company_id}")
 def get_quiz(company_id: int):
@@ -39,8 +28,6 @@ def get_quiz(company_id: int):
     
 @router.post("/")
 def register_quiz(quiz: Quiz):
-    
-    validate_quiz_type(quiz)
 
     quiz_registered = insert_quiz(quiz)
 
@@ -49,12 +36,9 @@ def register_quiz(quiz: Quiz):
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "The quiz has not been registered!"})
     
-    
-    
+
 @router.post("/alternative")
 def register_alternative(alternative: Alternative):
-    
-    validate_alternative_isanswer(alternative)
 
     alternative_registered = insert_alternative(alternative)
 
@@ -67,8 +51,6 @@ def register_alternative(alternative: Alternative):
 @router.put("/")
 def modify_quiz(quiz: Quiz):
     
-    validate_quiz_type(quiz)
-
     quiz_modified = update_quiz(quiz)
 
     if quiz_modified:
@@ -79,8 +61,6 @@ def modify_quiz(quiz: Quiz):
     
 @router.put("/alternative")
 def modify_alternative(alternative: Alternative):
-
-    validate_alternative_isanswer(alternative)
     
     alternative_modified = update_alternative(alternative)
 
