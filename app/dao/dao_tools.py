@@ -37,7 +37,28 @@ def insert_tool(tool: Tool):
     cursor.execute(query)
     connection.commit()
 
-    query = f'SELECT * FROM Tool WHERE name = "{tool.name}"'
+    query = f'SELECT name FROM Tool WHERE name = "{tool.name}"'
+
+    cursor.execute(query)
+    tool_result = cursor.fetchone()
+    connection.close()
+
+    return tool_result
+
+def update_tool(tool: Tool):
+
+    connection, cursor = connect_database()
+
+    query = f"""
+    UPDATE Tool
+    SET link_download = '{tool.link_download}', name = '{tool.name}', score = {tool.score} 
+    WHERE id = 3;
+    """
+
+    cursor.execute(query)
+    connection.commit()
+
+    query = f'SELECT name FROM Tool WHERE name = "{tool.name}";'
 
     cursor.execute(query)
     tool_result = cursor.fetchone()
