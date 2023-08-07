@@ -17,9 +17,7 @@ def select_quiz(id: int):
     """
 
     cursor.execute(query)
-    
     quiz_list = cursor.fetchall()
-    
     connection.close()
 
     return quiz_list
