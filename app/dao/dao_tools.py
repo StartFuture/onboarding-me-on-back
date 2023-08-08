@@ -35,7 +35,7 @@ def select_category_tool(id: int):
     """
 
     cursor.execute(query)
-    category_tool_list = cursor.fetchall()
+    category_tool_list = cursor.fetchone()
     connection.close()
     
     return category_tool_list
@@ -62,3 +62,22 @@ def insert_category_tool(category_tool: CategoryTool):
     connection.close()
 
     return category_tool_list
+
+
+def verify_category_exists(category_tool: CategoryTool):
+    
+    connection, cursor = connect_database()
+    
+    query =f"""
+    SELECT name From CategoryTool ct WHERE name = '{category_tool.name}';
+    """
+    
+    cursor.execute(query)
+    category_exists = cursor.fetchone()
+    
+    if category_exists:
+        return True
+    
+    return False
+    
+    
