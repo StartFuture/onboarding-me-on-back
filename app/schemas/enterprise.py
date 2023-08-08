@@ -1,4 +1,5 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, constr
+
 
 class Enterprise(BaseModel):
     id: str
