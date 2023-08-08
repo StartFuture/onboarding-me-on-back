@@ -37,9 +37,12 @@ def register_tool(tool: Tool):
 @router.put("/")
 def modify_tool(tool: Tool):
 
-    tool_registered = update_tool(tool)
+    if tool.id_tool:
+        tool_registered = update_tool(tool)
 
-    if tool_registered:
-        return JSONResponse(status_code=status.HTTP_200_OK, content=tool_registered)
+        if tool_registered:
+            return JSONResponse(status_code=status.HTTP_200_OK, content=tool_registered)
+        else:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "The tool has not been modified!"})
     else:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "The tool has not been modified!"})
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={"msg": "Missing id tool!"})

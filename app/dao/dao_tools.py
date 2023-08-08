@@ -65,3 +65,6 @@ def update_tool(tool: Tool):
     connection.close()
 
     return tool_result
+
+
+#def verify_tool_exists(tool: Tool):
