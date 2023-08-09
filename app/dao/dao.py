@@ -3,6 +3,7 @@ import mysql.connector
 from app.parameters import HOST, USERNAME, PASSWORD, DATABASE, PORT
 
 def connect_database(host = HOST, user = USERNAME, password = PASSWORD, database = DATABASE, port = PORT):
+    print(port)
     connection = mysql.connector.connect(
         host = host,
         port = port,

@@ -4,6 +4,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.routers.enterprise import router as router_enterprise
 from app.routers.tool import router as router_tool
 from app.routers.quiz import router as router_quiz
+from app.routers.gamified_journey import router as router_gamified_journey
+
 
 
 
@@ -31,3 +33,4 @@ app.add_middleware(
 app.include_router(router=router_enterprise)
 app.include_router(router=router_tool)
 app.include_router(router=router_quiz)
+app.include_router(router=router_gamified_journey)
