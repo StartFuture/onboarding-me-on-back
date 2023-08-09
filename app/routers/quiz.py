@@ -1,6 +1,5 @@
-from app.dao.dao_quiz import select_quiz, insert_quiz, insert_alternative, update_quiz, update_alternative
-from app.schemas.quiz import Quiz
-from app.schemas.alternative import Alternative
+from app.dao.dao_quiz import select_quiz, insert_quiz, insert_alternatives, update_quiz, update_alternative
+from app.schemas.quiz import Quiz, Alternative
 
 from fastapi import APIRouter,status, HTTPException
 from fastapi.responses import JSONResponse
@@ -29,23 +28,14 @@ def get_quiz(company_id: int):
 @router.post("/")
 def register_quiz(quiz: Quiz):
 
-    quiz_registered = insert_quiz(quiz)
+    id_quiz = insert_quiz(quiz)
+    alternative_registered = insert_alternatives(quiz.alternatives, id_quiz['id_quiz'])
 
-    if quiz_registered:
-        return JSONResponse(status_code=status.HTTP_200_OK, content=quiz_registered)
+    if id_quiz and alternative_registered:
+        return JSONResponse(status_code=status.HTTP_200_OK, content={"msg": "Successfully registered!"})
     else:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "The quiz has not been registered!"})
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={"msg": "The quiz has not been registered!"})
     
-
-@router.post("/alternative")
-def register_alternative(alternative: Alternative):
-
-    alternative_registered = insert_alternative(alternative)
-
-    if alternative_registered:
-        return JSONResponse(status_code=status.HTTP_200_OK, content=alternative_registered)
-    else:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "The alternative has not been registered!"})
     
     
 @router.put("/")
