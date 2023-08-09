@@ -33,17 +33,20 @@ def insert_tool(tool: Tool):
     VALUES
     ('{tool.link_download}', '{tool.name}', {tool.score}, 1, 1);
     """
+    try:
+        cursor.execute(query)
+    except Exception as error:
+        return None
+    else:
+        connection.commit()
 
-    cursor.execute(query)
-    connection.commit()
+        query = f'SELECT name FROM Tool WHERE name = "{tool.name}"'
+        
+        cursor.execute(query)
+        tool_result = cursor.fetchone()
+        connection.close()
 
-    query = f'SELECT name FROM Tool WHERE name = "{tool.name}"'
-
-    cursor.execute(query)
-    tool_result = cursor.fetchone()
-    connection.close()
-
-    return tool_result
+        return tool_result
 
 def update_tool(tool: Tool):
 
@@ -52,19 +55,36 @@ def update_tool(tool: Tool):
     query = f"""
     UPDATE Tool
     SET link_download = '{tool.link_download}', name = '{tool.name}', score = {tool.score} 
-    WHERE id = 3;
+    WHERE id = {tool.id_tool};
     """
+    try:
+        cursor.execute(query)
+    except Exception as error:
+        return False
+    else:
+        connection.commit()
+        connection.close()
 
-    cursor.execute(query)
-    connection.commit()
-
-    query = f'SELECT name FROM Tool WHERE name = "{tool.name}";'
-
-    cursor.execute(query)
-    tool_result = cursor.fetchone()
-    connection.close()
-
-    return tool_result
+        return True
 
 
-#def verify_tool_exists(tool: Tool):
+def verify_tool_exists(name: str = None, id_tool: int = None):
+
+    connection, cursor = connect_database()
+
+    if id_tool:
+        query = f"SELECT id FROM Tool WHERE id = {id_tool}"
+    else:
+        query = f"SELECT id FROM Tool WHERE id = {name}"
+    
+    try:
+        cursor.execute(query)
+    except Exception as error:
+        return False
+    else:
+        tool_id = cursor.fetchone()
+
+        connection.close()
+
+        return bool(tool_id)
+    
