@@ -12,7 +12,7 @@ def select_quiz(id: int):
    left join GamifiedJourney gj on gj.id = g.gamified_journey_id 
    left join Company c on c.id = gj.company_id 
    WHERE
-   c.id ={id}
+   c.id = {id}
    ;
    """
 
@@ -49,7 +49,6 @@ def insert_quiz(quiz: Quiz):
         id_quiz = cursor.fetchone()
         connection.commit()
         
-        print(id_quiz)
         cursor.close()
         connection.close()
     
