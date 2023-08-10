@@ -15,13 +15,16 @@ def select_tool(id: int):
     ;
     """
 
-    cursor.execute(query)
-    
-    tool_list = cursor.fetchall()
-    
-    connection.close()
+    try:
+        cursor.execute(query)
+    except Exception as error:
+        return False
+    else:
+        tool_list = cursor.fetchall()
+        
+        connection.close()
 
-    return tool_list
+        return tool_list
 
 def insert_tool(tool: Tool):
 
