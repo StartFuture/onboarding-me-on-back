@@ -1,8 +1,10 @@
-from app.dao.dao_quiz import select_quiz, insert_quiz, insert_alternatives, update_quiz, update_alternative, verify_if_game_id_exists, verify_if_quiz_id_exists, verify_if_alternative_id_exists, verify_if_quiz_have_alternative
-from app.schemas.quiz import Quiz, Alternative
-
 from fastapi import APIRouter,status, HTTPException
 from fastapi.responses import JSONResponse
+
+
+from app.dao import dao_quiz as dao
+from app.schemas.quiz import Quiz, Alternative
+
 
 
 router = APIRouter(
@@ -17,7 +19,7 @@ router = APIRouter(
 @router.get("/{company_id}")
 def get_quiz(company_id: int):
     
-    quiz = select_quiz(company_id)
+    quiz = dao.select_quiz(company_id)
     
     if quiz:
         return JSONResponse(status_code=status.HTTP_200_OK, content=quiz)
@@ -28,15 +30,15 @@ def get_quiz(company_id: int):
 @router.post("/")
 def register_quiz(quiz: Quiz):
 
-    game_id_exists = verify_if_game_id_exists(quiz)
+    game_id_exists = dao.verify_if_game_id_exists(quiz)
     
     if not game_id_exists:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={"msg": "This game_id not exists!"})
     
 
-    id_quiz = insert_quiz(quiz)
+    id_quiz = dao.insert_quiz(quiz)
     
-    alternative_registered = insert_alternatives(quiz.alternatives, id_quiz['id_quiz'])
+    alternative_registered = dao.insert_alternatives(quiz.alternatives, id_quiz['id_quiz'])
 
     if id_quiz and alternative_registered:
         return JSONResponse(status_code=status.HTTP_200_OK, content={"msg": "Successfully registered!"})
@@ -47,13 +49,13 @@ def register_quiz(quiz: Quiz):
 @router.put("/")
 def modify_quiz(quiz: Quiz):
     
-    game_id_exists = verify_if_game_id_exists(quiz)
+    game_id_exists = dao.verify_if_game_id_exists(quiz)
     
     if not game_id_exists:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={"msg": "This game_id not exists!"})
     
     
-    quiz_id_exists = verify_if_quiz_id_exists(quiz)
+    quiz_id_exists = dao.verify_if_quiz_id_exists(quiz)
     
     if not quiz_id_exists:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={"msg": "This quiz_id not exists!"})
@@ -61,22 +63,22 @@ def modify_quiz(quiz: Quiz):
     
     for alternative in quiz.alternatives:
         
-        alternative_id_exists = verify_if_alternative_id_exists(alternative)
+        alternative_id_exists = dao.verify_if_alternative_id_exists(alternative)
         
         if not alternative_id_exists:
             raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={"msg": "This alternative_id not exists!"})
         
       
-    quiz_have_alternative = verify_if_quiz_have_alternative(quiz)   
+    quiz_have_alternative = dao.verify_if_quiz_have_alternative(quiz)   
      
     if not quiz_have_alternative:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={"msg": "This quiz dont have this alternative!"})
         
 
-    id_quiz = update_quiz(quiz)
+    id_quiz = dao.update_quiz(quiz)
 
     
-    alternative_modified = update_alternative(quiz.alternatives, id_quiz['id'])
+    alternative_modified = dao.update_alternative(quiz.alternatives, id_quiz['id'])
     
     
     if id_quiz and alternative_modified:
