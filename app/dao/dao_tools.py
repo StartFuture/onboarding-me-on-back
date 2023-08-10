@@ -15,12 +15,19 @@ def select_tool(id: int):
     c.id ={id}
     ;
     """
+    
+    try:
+        cursor.execute(query)
+        
+    except Exception as error:
+        connection.close()
+        return None
+        
+    else:    
+        tool_list = cursor.fetchall()
+        connection.close()
 
-    cursor.execute(query)
-    tool_list = cursor.fetchall()
-    connection.close()
-
-    return tool_list
+        return tool_list
 
 
 def select_category_tool(id: int):
@@ -34,11 +41,18 @@ def select_category_tool(id: int):
     ;
     """
 
-    cursor.execute(query)
-    category_tool_list = cursor.fetchone()
-    connection.close()
+    try:
+        cursor.execute(query)
+        
+    except Exception as error:
+        connection.close()
+        return None
     
-    return category_tool_list
+    else:
+        category_tool_list = cursor.fetchone()
+        connection.close()
+        
+        return category_tool_list
 
 
 def insert_category_tool(category_tool: CategoryTool):
@@ -52,16 +66,18 @@ def insert_category_tool(category_tool: CategoryTool):
     ('{category_tool.name}');
     """
 
-    cursor.execute(query)
-    connection.commit()
+    try:
+        cursor.execute(query)
+        
+    except Exception as error:
+        connection.close()
+        return False
     
-    query = f'SELECT name FROM CategoryTool WHERE name = "{category_tool.name}"'
+    else:
+        connection.commit()
+        connection.close()
 
-    cursor.execute(query)
-    category_tool_list = cursor.fetchone()
-    connection.close()
-
-    return category_tool_list
+        return True
 
 
 def verify_category_exists(category_tool: CategoryTool):
@@ -72,12 +88,21 @@ def verify_category_exists(category_tool: CategoryTool):
     SELECT name From CategoryTool ct WHERE name = '{category_tool.name}';
     """
     
-    cursor.execute(query)
-    category_exists = cursor.fetchone()
+    try:
+        cursor.execute(query)
+        
+    except Exception as error:
+        connection.close()
+        return False    
     
-    if category_exists:
-        return True
-    
+    else:    
+        
+        category_exists = cursor.fetchone()
+        connection.close()
+        
+        if category_exists:
+            return True
+        
     return False
     
     

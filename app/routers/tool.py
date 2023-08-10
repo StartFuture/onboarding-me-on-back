@@ -48,6 +48,6 @@ def register_category_tool(category_tool: CategoryTool):
     category_registered = insert_category_tool(category_tool)
 
     if category_registered:
-        return JSONResponse(status_code=status.HTTP_200_OK, content=category_registered)
+        return JSONResponse(status_code=status.HTTP_200_OK, content={"msg": "The category has been registered!"})
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "The category has not been registered!"})
