@@ -80,7 +80,7 @@ def modify_quiz(quiz: Quiz):
     
     
     if id_quiz and alternative_modified:
-        return JSONResponse(status_code=status.HTTP_200_OK, content=id_quiz)
+        return JSONResponse(status_code=status.HTTP_200_OK, content={"msg": "The quiz has been modified!"})
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "The quiz has not been modified!"})
     
