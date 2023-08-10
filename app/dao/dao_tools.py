@@ -105,4 +105,3 @@ def verify_category_exists(category_tool: CategoryTool):
         
     return False
     
-    
