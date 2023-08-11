@@ -1,4 +1,4 @@
-from app.dao.dao_gamified_journey import insert_video_company, select_video_company, update_video_company_db 
+from app.dao.dao_gamified_journey import insert_video_company, select_video_company, modify_video_company 
 from app.schemas.gamified_journey import GamifiedJourney 
 from fastapi import APIRouter
 
@@ -18,11 +18,11 @@ def get_video_company(id: int):
     return video_company
 
 @router.post("/create")
-def create_video_company(gamified_journey: GamifiedJourney):
-    insert_video_company()
-    return gamified_journey
+def create_video_company(id: int, link: str):
+    video_insert_company = insert_video_company(id=id)
+    return video_insert_company
 
 @router.post("/update")
-def update_video_company(gamified_journey: GamifiedJourney):
-    update_video_company_db()
-    return gamified_journey
+def update_video_company(id: int, new_link: str):
+    video_update_company = modify_video_company(id=id)
+    return video_update_company
