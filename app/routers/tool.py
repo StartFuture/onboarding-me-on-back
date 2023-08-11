@@ -1,4 +1,4 @@
-from app.dao.dao_tools import select_tool, select_category_tool, insert_category_tool, verify_category_exists
+from app.dao.dao_tools import select_tools, select_category_tool, insert_category_tool, verify_category_exists
 from app.schemas.category_tool import CategoryTool
 
 from fastapi import APIRouter,status, HTTPException
@@ -15,7 +15,7 @@ router = APIRouter(
 @router.get("/{company_id}")
 def get_tools(company_id: int):
     
-    tool = select_tool(company_id)
+    tool = select_tools(company_id)
     
     if tool:
         return JSONResponse(status_code=status.HTTP_200_OK, content=tool)
