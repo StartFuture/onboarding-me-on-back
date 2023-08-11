@@ -42,7 +42,7 @@ def register_category_tool(category_tool: CategoryTool):
     category_exists = verify_category_exists(category_tool)
     
     if category_exists:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "The category already exists!"})
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"msg": "The category already exists!"})
     
 
     category_registered = insert_category_tool(category_tool)
