@@ -1,8 +1,10 @@
 from pydantic import BaseModel, Field, constr
 
+from app import parameters
+
 
 class Company(BaseModel):
     id: str
     name: str
-    cnpj: str = Field(pattern=r'^\d{2}\.\d{3}\.\d{3}\/\d{4}\-\d{2}$')
+    cnpj: str = Field(pattern=parameters.dict_regex["cnpj pattern"])
     

@@ -1,7 +1,7 @@
 from app.dao.dao import connect_database
 from app.schemas.tool import Tool
 
-def select_tool(id: int):
+def select_tools(id: int):
     
     connection, cursor = connect_database()
     
@@ -18,7 +18,7 @@ def select_tool(id: int):
     try:
         cursor.execute(query)
     except Exception as error:
-        return False
+        return None
     else:
         tool_list = cursor.fetchall()
         
@@ -34,22 +34,17 @@ def insert_tool(tool: Tool):
     INSERT INTO Tool 
     (link_download, name, score, game_id, category_id)
     VALUES
-    ('{tool.link_download}', '{tool.name}', {tool.score}, 1, 1);
+    ('{tool.link_download}', '{tool.name}', {tool.score}, {tool.game_id}, {tool.category_id});
     """
     try:
         cursor.execute(query)
     except Exception as error:
-        return None
+        return False
     else:
         connection.commit()
-
-        query = f'SELECT name FROM Tool WHERE name = "{tool.name}"'
-        
-        cursor.execute(query)
-        tool_result = cursor.fetchone()
         connection.close()
 
-        return tool_result
+        return True
 
 def update_tool(tool: Tool):
 
@@ -57,7 +52,7 @@ def update_tool(tool: Tool):
 
     query = f"""
     UPDATE Tool
-    SET link_download = '{tool.link_download}', name = '{tool.name}', score = {tool.score} 
+    SET link_download = '{tool.link_download}', name = '{tool.name}', score = {tool.score}, category_id = {tool.category_id} 
     WHERE id = {tool.id_tool};
     """
     try:
