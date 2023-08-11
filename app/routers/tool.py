@@ -13,7 +13,7 @@ router = APIRouter(
         )
 
 @router.get("/{company_id}")
-def get_tool(company_id: int):
+def get_tools(company_id: int):
     
     tool = select_tool(company_id)
     

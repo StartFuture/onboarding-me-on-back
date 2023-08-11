@@ -2,7 +2,7 @@ from app.dao.dao import connect_database
 from app.schemas.category_tool import CategoryTool
 
 
-def select_tool(id: int):
+def select_tools(id: int):
     
     connection, cursor = connect_database()
     
