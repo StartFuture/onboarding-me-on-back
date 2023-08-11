@@ -51,6 +51,10 @@ def modify_quiz(quiz: Quiz):
 
     list_alternative_id = []
     
+    if not quiz.alternatives:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={"msg": "Alternative is required!"})
+    
+    
     for alternative in quiz.alternatives:
         
         if alternative.alternative_id:
@@ -73,9 +77,8 @@ def modify_quiz(quiz: Quiz):
     
     alternative_id_exists = dao.verify_if_alternative_id_exists(list_alternative_id, quiz.quiz_id)
     
-    if len(alternative_id_exists) == len(list_alternative_id):
+    if len(alternative_id_exists) != len(list_alternative_id):
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={"msg": "This alternative_id not exists!"})
-
 
 
     quiz_modified = dao.update_quiz(quiz)

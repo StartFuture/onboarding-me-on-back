@@ -203,24 +203,23 @@ def verify_if_quiz_id_exists(quiz: Quiz):
 def verify_if_alternative_id_exists(alternative_list: list, quiz_id: int):
     
     connection, cursor = connect_database()
-    
+
+    placeholder = ','.join(['%s'] * len(alternative_list))
+
     query = f"""
     SELECT id
     FROM Alternative 
-    WHERE id in ({alternative_list}) and quiz_id = {quiz_id};
+    WHERE id IN ({placeholder}) AND quiz_id = %s;
     """
-    
+
     try:
-        cursor.execute(query)
-        
+        cursor.execute(query, alternative_list + [quiz_id])
+        alternative_id_exists = cursor.fetchall()
+
     except Exception as error:
         connection.close()
-        return False
-    
-    else:
-        alternative_id_exists = cursor.fetchall()
-        connection.close()
+        return []
 
+    else:
+        connection.close()
         return alternative_id_exists
-    
-            
