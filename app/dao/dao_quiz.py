@@ -106,24 +106,16 @@ def update_quiz(quiz: Quiz):
     
     except Exception as error:
         connection.close()
-        return None
+        return False
 
     else:
         
-        query = f"""                       
-        SELECT id
-        FROM Quiz
-        WHERE id = {quiz.quiz_id};
-        """
-        
         cursor.execute(query)
-        
-        id_quiz = cursor.fetchone()
         
         connection.commit()
         connection.close()
         
-        return id_quiz
+        return True
 
 
 def update_alternative(alternatives: list[Alternative], quiz_id: int):
@@ -145,6 +137,7 @@ def update_alternative(alternatives: list[Alternative], quiz_id: int):
             cursor.execute(query)
             
         except Exception as error:
+            connection.close()
             return False
         
         else:
@@ -172,6 +165,7 @@ def verify_if_game_id_exists(quiz: Quiz):
         cursor.execute(query)
         
     except Exception as error:
+        connection.close()
         return False
     
     else:
@@ -195,6 +189,7 @@ def verify_if_quiz_id_exists(quiz: Quiz):
         cursor.execute(query)
         
     except Exception as error:
+        connection.close()
         return False
     
     else:
@@ -205,57 +200,27 @@ def verify_if_quiz_id_exists(quiz: Quiz):
     
     
     
-def verify_if_alternative_id_exists(alternative: Alternative):
+def verify_if_alternative_id_exists(alternative_list: list, quiz_id: int):
     
     connection, cursor = connect_database()
     
     query = f"""
     SELECT id
     FROM Alternative 
-    WHERE id = {alternative.alternative_id};
+    WHERE id in ({alternative_list}) and quiz_id = {quiz_id};
     """
     
     try:
         cursor.execute(query)
         
     except Exception as error:
+        connection.close()
         return False
     
     else:
-        alternative_id_exists = cursor.fetchone()
+        alternative_id_exists = cursor.fetchall()
         connection.close()
 
         return alternative_id_exists
     
-    
-def verify_if_quiz_have_alternative(quiz: Quiz):
-    
-    
-    for alternative in quiz.alternatives:
-        
-        connection, cursor = connect_database()
-       
-        query = f"""
-        SELECT q.id, a.id, a.alternative_text  FROM Quiz q
-        right join Alternative a on q.id = a.quiz_id 
-        WHERE q.id = {quiz.quiz_id} AND a.id = {alternative.alternative_id} ;
-        """
-    
-    
-        try:
-            cursor.execute(query)
-            
-        except Exception as error:
-            return False
-        
-        else:
-            alternative_id_exists = cursor.fetchone()
-            connection.close()
-            
-            if not alternative_id_exists:
-                quiz_have_this_alternative = False
-            else:
-                quiz_have_this_alternative = True
-                
-    return quiz_have_this_alternative
             

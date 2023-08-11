@@ -9,7 +9,6 @@ class Alternative(BaseModel):
     alternative_id: Optional[int] = None
     text: str
     is_answer: int = Field(description="0 or 1", ge=0, le=1)
-    quiz_id: Optional[int] = None
 
 
 class Quiz(BaseModel):
