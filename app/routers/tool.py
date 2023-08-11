@@ -1,4 +1,4 @@
-from app.dao.dao_tools import select_tools, select_category_tool, insert_category_tool, verify_category_exists
+from app.dao import dao_tools as dao
 from app.schemas.category_tool import CategoryTool
 
 from fastapi import APIRouter,status, HTTPException
@@ -15,7 +15,12 @@ router = APIRouter(
 @router.get("/{company_id}")
 def get_tools(company_id: int):
     
-    tool = select_tools(company_id)
+    company_exists = dao.verify_if_company_exists(company_id)
+    
+    if not company_exists:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "This company don't exists!"})
+    
+    tool = dao.select_tools(company_id)
     
     if tool:
         return JSONResponse(status_code=status.HTTP_200_OK, content=tool)
@@ -27,7 +32,7 @@ def get_tools(company_id: int):
 @router.get("/category/{tool_id}")
 def get_category_tool(tool_id: int):
     
-    category_tool = select_category_tool(tool_id)
+    category_tool = dao.select_category_tool(tool_id)
     
     if category_tool:
         return JSONResponse(status_code=status.HTTP_200_OK, content=category_tool)
@@ -35,17 +40,15 @@ def get_category_tool(tool_id: int):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "This company don't have this tool_id!"})
     
     
-@router.post("/category")
+@router.post("/category/register")
 def register_category_tool(category_tool: CategoryTool):
 
-
-    category_exists = verify_category_exists(category_tool)
+    category_exists = dao.verify_if_category_exists(category_tool)
     
     if category_exists:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"msg": "The category already exists!"})
     
-
-    category_registered = insert_category_tool(category_tool)
+    category_registered = dao.insert_category_tool(category_tool)
 
     if category_registered:
         return JSONResponse(status_code=status.HTTP_200_OK, content={"msg": "The category has been registered!"})

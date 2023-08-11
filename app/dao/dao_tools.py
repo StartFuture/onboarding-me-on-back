@@ -63,7 +63,8 @@ def insert_category_tool(category_tool: CategoryTool):
     INSERT INTO CategoryTool 
     (name)
     VALUES
-    ('{category_tool.name}');
+    ('{category_tool.name}')
+    ;
     """
 
     try:
@@ -71,21 +72,27 @@ def insert_category_tool(category_tool: CategoryTool):
         
     except Exception as error:
         connection.close()
-        return False
+        return None
     
     else:
         connection.commit()
+        
+        query = f'SELECT LAST_INSERT_ID() FROM CategoryTool;'
+        cursor.execute(query)
+        
+        category_tool_id = cursor.fetchone()
         connection.close()
 
-        return True
+        return category_tool_id
 
 
-def verify_category_exists(category_tool: CategoryTool):
+def verify_if_category_exists(category_tool: CategoryTool):
     
     connection, cursor = connect_database()
     
     query =f"""
-    SELECT name From CategoryTool ct WHERE name = '{category_tool.name}';
+    SELECT name From CategoryTool ct WHERE name = '{category_tool.name}'
+    ;
     """
     
     try:
@@ -101,6 +108,35 @@ def verify_category_exists(category_tool: CategoryTool):
         connection.close()
         
         if category_exists:
+            return True
+        
+    return False
+
+    
+def verify_if_company_exists(company_id: int):
+    
+    connection, cursor = connect_database()
+    
+    query =f"""
+    SELECT id
+    FROM Company
+    WHERE id = {company_id}
+    ;
+    """
+    
+    try:
+        cursor.execute(query)
+        
+    except Exception as error:
+        connection.close()
+        return False    
+    
+    else:    
+        
+        company_exists = cursor.fetchone()
+        connection.close()
+        
+        if company_exists:
             return True
         
     return False
