@@ -1,4 +1,5 @@
 from app.dao.dao import connect_database
+from app.schemas.tool import Tool
 from app.schemas.category_tool import CategoryTool
 
 
