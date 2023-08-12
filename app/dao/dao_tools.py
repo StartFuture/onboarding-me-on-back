@@ -82,7 +82,7 @@ def verify_tool_exists(name: str = None, id_tool: int = None):
     if id_tool:
         query = f"SELECT id FROM Tool WHERE id = {id_tool}"
     else:
-        query = f"SELECT id FROM Tool WHERE id = {name}"
+        query = f"SELECT id FROM Tool WHERE name = {name}"
     
     try:
         cursor.execute(query)
