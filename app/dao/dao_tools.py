@@ -29,6 +29,72 @@ def select_tools(id: int):
         connection.close()
 
         return tool_list
+    
+
+
+def insert_tool(tool: Tool):
+
+    connection, cursor = connect_database()
+
+    query = f"""
+    INSERT INTO Tool 
+    (link_download, name, score, game_id, category_id)
+    VALUES
+    ('{tool.link_download}', '{tool.name}', {tool.score}, {tool.game_id}, {tool.category_id});
+    """
+    try:
+        cursor.execute(query)
+    except Exception as error:
+        connection.close()
+        return False
+    else:
+        connection.commit()
+        connection.close()
+
+        return True
+    
+
+def update_tool(tool: Tool):
+
+    connection, cursor = connect_database()
+
+    query = f"""
+    UPDATE Tool
+    SET link_download = '{tool.link_download}', name = '{tool.name}', score = {tool.score}, category_id = {tool.category_id} 
+    WHERE id = {tool.id_tool};
+    """
+    try:
+        cursor.execute(query)
+    except Exception as error:
+        connection.close()
+        return False
+    else:
+        connection.commit()
+        connection.close()
+
+        return True
+
+
+def verify_tool_exists(name: str = None, id_tool: int = None):
+
+    connection, cursor = connect_database()
+
+    if id_tool:
+        query = f"SELECT id FROM Tool WHERE id = {id_tool}"
+    else:
+        query = f"SELECT id FROM Tool WHERE name = {name}"
+    
+    try:
+        cursor.execute(query)
+    except Exception as error:
+        connection.close()
+        return False
+    else:
+        tool_id = cursor.fetchone()
+
+        connection.close()
+
+        return bool(tool_id)
 
 
 def select_category_tool(id: int):

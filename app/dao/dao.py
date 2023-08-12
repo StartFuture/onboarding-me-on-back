@@ -10,6 +10,6 @@ def connect_database(host = HOST, user = USERNAME, password = PASSWORD, database
         password = password,
         database = database
     )
-    cursor = connection.cursor(dictionary=True)
+    cursor = connection.cursor(dictionary=True, buffered=True)
 
     return connection, cursor
