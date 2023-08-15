@@ -1,18 +1,18 @@
 from app.dao.dao import connect_database
-from app.schemas.enterprise import Enterprise 
+from app.schemas.company import Company 
 from fastapi import APIRouter
 
 
 router = APIRouter(
-    prefix="/enterprise",
+    prefix="/company",
     tags=[
-        "enterprise"
+        "company"
     ]
     
                    )
 
 
 @router.post("/")
-def get_enterprise(enterprise: Enterprise):
+def get_company(company: Company):
     connect_database()
-    return enterprise
+    return company
