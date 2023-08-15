@@ -75,6 +75,31 @@ def update_tool(tool: Tool):
         return True
 
 
+def delete_tool(tool_id : int, game_id: int):
+
+    connection, cursor = connect_database()
+
+    query = f"""
+    DELETE FROM Tool
+    WHERE game_id = {game_id} and id= {tool_id}
+    ;
+    """
+    
+    try:
+        cursor.execute(query)
+        
+    except Exception as error:
+        connection.close()
+        return False
+
+    else:
+        
+        connection.commit()
+        connection.close()
+    
+        return True   
+    
+    
 def verify_tool_exists(name: str = None, id_tool: int = None):
 
     connection, cursor = connect_database()
@@ -86,9 +111,11 @@ def verify_tool_exists(name: str = None, id_tool: int = None):
     
     try:
         cursor.execute(query)
+        
     except Exception as error:
         connection.close()
         return False
+    
     else:
         tool_id = cursor.fetchone()
 

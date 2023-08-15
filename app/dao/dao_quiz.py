@@ -1,3 +1,5 @@
+from typing import List
+
 from app.dao.dao import connect_database
 from app.schemas.quiz import Quiz, Alternative
 
@@ -116,66 +118,84 @@ def update_quiz(quiz: Quiz):
         return True
 
 
-def delete_quiz_alternative(alternative_id: int, quiz_id: int):
+def delete_quiz_alternative(alternatives: List[int], quiz_id: int, game_id: int):
     
     connection, cursor = connect_database()
-    
-        
-    delete_alternative(alternative_id, quiz_id)
-
-    query = f"""
-    DELETE FROM Quiz WHERE id = {quiz_id}
-    ;
-    """ 
     
     try:
-    
-        cursor.execute(query)
+        
+        connection.autocommit = False
+        
+        deleted = delete_alternative(connection=connection, cursor=cursor, alternatives=alternatives, quiz_id=quiz_id)
+        
+        if deleted:
+            
+            query = f"""
+            DELETE FROM Quiz WHERE game_id = {game_id} and id = {quiz_id} 
+            ;
+            """     
+            cursor.execute(query)
+            
         
     except Exception as error:
+        connection.close()
+        return False
+        
+    else:
+        connection.commit()
+        connection.autocommit = True
+        connection.close()
+    
+    return True
+
+
+def delete_alternative(alternatives: List[int], quiz_id: int, connection = None, cursor = None):
+   
+    placeholder = ','.join(['%s'] * len(alternatives))
+        
+   
+    if cursor and connection: 
         
         query = f"""
-        ROLLBACK
+        DELETE FROM Alternative 
+        WHERE quiz_id = %s AND id IN ({placeholder})
         ;
         """ 
+          
+        try:    
+            cursor.execute(query, [quiz_id] + alternatives)
         
-        connection.close()
-        
-        return False
-        
+        except Exception as error:   
+            connection.close()
+            return False
+
+        else:
+            return True
+    
     else:
         
-        connection.commit()
-        connection.close()
-        return True
-
-
-def delete_alternative(alternative_id: int, quiz_id: int):
-    
-    connection, cursor = connect_database()
-
-    
-    query = f"""
-    DELETE FROM Alternative 
-    WHERE quiz_id = {quiz_id} AND id = {alternative_id}
-    ;
-    """ 
-    
-    try:    
-        cursor.execute(query)
-    
-    except Exception as error:
-        connection.close()
-        return False
-
-    else:
+        connection, cursor = connect_database()
         
-        connection.commit()
-        connection.close()
+        query = f"""
+        DELETE FROM Alternative
+        WHERE quiz_id = %s AND id IN ({placeholder})
+        ;
+        """
         
-        return True
+        try:
+            cursor.execute(query, [quiz_id] + alternatives)
+            
+        except Exception as error:
+            connection.close()
+            return False
 
+        else:
+            
+            connection.commit()
+            connection.close()
         
+            return True   
+           
 
 def update_alternative(alternatives: list[Alternative], quiz_id: int):
 
@@ -208,7 +228,6 @@ def update_alternative(alternatives: list[Alternative], quiz_id: int):
     return True
 
 
-
 def verify_if_game_id_exists(quiz: Quiz):
     
     connection, cursor = connect_database()
@@ -233,8 +252,7 @@ def verify_if_game_id_exists(quiz: Quiz):
 
         return game_id_exists
     
-    
-    
+     
 def verify_if_quiz_id_exists(quiz: Quiz):
     
     connection, cursor = connect_database()
@@ -256,7 +274,6 @@ def verify_if_quiz_id_exists(quiz: Quiz):
         connection.close()
 
         return quiz_id_exists
-    
     
     
 def verify_if_alternative_id_exists(alternative_list: list, quiz_id: int):

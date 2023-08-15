@@ -32,7 +32,7 @@ def get_tools(company_id: int):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "This company don't have tools!"})    
 
 
-@router.post("/register/") 
+@router.post("/register") 
 def register_tool(tool: Tool):
 
     tool.name = utils.string_to_lower(tool.name)
@@ -49,7 +49,7 @@ def register_tool(tool: Tool):
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "The tool has not been registered!"})
 
 
-@router.put("/update/")
+@router.put("/update")
 def modify_tool(tool: Tool):
 
     tool_exists = verify_tool_exists(id_tool=tool.id_tool)
@@ -67,6 +67,23 @@ def modify_tool(tool: Tool):
             raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={"msg": "Missing id tool!"})
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg":"This tool is not registered!"}) 
+     
+    
+@router.delete("/delete")
+def del_tool(tool_id: int, game_id: int):   
+    
+    tool_exists = verify_tool_exists(id_tool=tool_id)
+     
+    if not tool_exists:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "This tool dont exists!"})
+    
+    tool_deleted = dao.delete_tool(tool_id=tool_id, game_id=game_id)
+    
+    
+    if tool_deleted:
+        return JSONResponse(status_code=status.HTTP_200_OK, content={"msg": "The tool has been deleted!"})
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "The tool has not been deleted!"})  
     
     
 @router.get("/category/{tool_id}")
