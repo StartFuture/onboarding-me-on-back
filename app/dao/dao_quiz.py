@@ -110,13 +110,72 @@ def update_quiz(quiz: Quiz):
 
     else:
         
+        connection.commit()
+        connection.close()
+        
+        return True
+
+
+def delete_quiz_alternative(alternative_id: int, quiz_id: int):
+    
+    connection, cursor = connect_database()
+    
+        
+    delete_alternative(alternative_id, quiz_id)
+
+    query = f"""
+    DELETE FROM Quiz WHERE id = {quiz_id}
+    ;
+    """ 
+    
+    try:
+    
         cursor.execute(query)
+        
+    except Exception as error:
+        
+        query = f"""
+        ROLLBACK
+        ;
+        """ 
+        
+        connection.close()
+        
+        return False
+        
+    else:
+        
+        connection.commit()
+        connection.close()
+        return True
+
+
+def delete_alternative(alternative_id: int, quiz_id: int):
+    
+    connection, cursor = connect_database()
+
+    
+    query = f"""
+    DELETE FROM Alternative 
+    WHERE quiz_id = {quiz_id} AND id = {alternative_id}
+    ;
+    """ 
+    
+    try:    
+        cursor.execute(query)
+    
+    except Exception as error:
+        connection.close()
+        return False
+
+    else:
         
         connection.commit()
         connection.close()
         
         return True
 
+        
 
 def update_alternative(alternatives: list[Alternative], quiz_id: int):
 

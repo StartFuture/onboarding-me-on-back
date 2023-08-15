@@ -3,7 +3,7 @@ from fastapi.responses import JSONResponse
 
 
 from app.dao import dao_quiz as dao
-from app.schemas.quiz import Quiz
+from app.schemas.quiz import Quiz, Alternative
 
 
 
@@ -95,4 +95,47 @@ def modify_quiz(quiz: Quiz):
         return JSONResponse(status_code=status.HTTP_200_OK, content={"msg": "The quiz has been modified!"})
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "The quiz has not been modified!"})
+
+
+@router.delete("/delete")
+def delete_quiz(alternative_id: int, quiz_id: int):
+     
+    
+    alternative = [alternative_id]
+    
+    alternative_id_exists = dao.verify_if_alternative_id_exists(alternative, quiz_id)
+    
+    if len(alternative_id_exists) == 0:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={"msg": "This alternative_id not exists!"})
+    
+    
+    quiz_deleted = dao.delete_quiz_alternative(alternative_id=alternative_id, quiz_id=quiz_id)
+    
+    
+    if quiz_deleted:
+        return JSONResponse(status_code=status.HTTP_200_OK, content={"msg": "The quiz has been deleted!"})
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "The quiz has not been deleted!"})
+
+
+
+  
+@router.delete("/alternative/delete")
+def del_alternative(alternative_id: int, quiz_id: int):
+    
+    alternative = [alternative_id]
+    
+    alternative_id_exists = dao.verify_if_alternative_id_exists(alternative, quiz_id)
+    
+    if len(alternative_id_exists) == 0:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={"msg": "This alternative_id not exists!"})
+    
+    
+    alternative_deleted = dao.delete_alternative(alternative_id = alternative_id, quiz_id = quiz_id)
+
+    
+    if alternative_deleted:
+        return JSONResponse(status_code=status.HTTP_200_OK, content={"msg": "The alternative has been deleted!"})
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "The alternative has not been deleted!"})
     
