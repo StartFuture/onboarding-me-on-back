@@ -5,8 +5,7 @@ from fastapi import APIRouter,status, HTTPException
 from fastapi.responses import JSONResponse
 
 from app import utils
-from app.schemas.tool import Tool
-from app.dao.dao_tools import select_tools, insert_tool, update_tool, verify_tool_exists
+from app.schemas.tool import Tool, EmployeeTool
 
 
 router = APIRouter(
@@ -36,12 +35,12 @@ def get_tools(company_id: int):
 def register_tool(tool: Tool):
 
     tool.name = utils.string_to_lower(tool.name)
-    tool_exists = verify_tool_exists(name=tool.name)
+    tool_exists = dao.verify_tool_exists(name=tool.name)
 
     if tool_exists:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"msg":"This tool is already registered!"})
     else:
-        tool_registered = insert_tool(tool)
+        tool_registered = dao.insert_tool(tool)
 
         if tool_registered:
             return JSONResponse(status_code=status.HTTP_200_OK, content={"msg":"The tool has been registered!"})
@@ -52,12 +51,12 @@ def register_tool(tool: Tool):
 @router.put("/update/")
 def modify_tool(tool: Tool):
 
-    tool_exists = verify_tool_exists(id_tool=tool.id_tool)
+    tool_exists = dao.verify_tool_exists(id_tool=tool.id_tool)
     tool.name = utils.string_to_lower(tool.name)
 
     if tool_exists:
         if tool.id_tool:
-            tool_registered = update_tool(tool)
+            tool_registered = dao.update_tool(tool)
 
             if tool_registered:
                 return JSONResponse(status_code=status.HTTP_200_OK, content={"msg": "Success updated!"})
@@ -94,3 +93,24 @@ def register_category_tool(category_tool: CategoryTool):
         return JSONResponse(status_code=status.HTTP_200_OK, content={"msg": "The category has been registered!"})
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "The category has not been registered!"})
+    
+
+@router.post("/linking")
+def complete_tool(employee_tool: EmployeeTool):
+
+    tool_exists = dao.verify_tool_exists(id_tool=employee_tool.tool_id)
+
+    if tool_exists:
+        tool_completed = dao.verify_tool_completed(tool_id=employee_tool.tool_id)
+
+        if tool_completed:
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"msg": "This tool has already been completed!"})
+        else:
+            tool_linking = dao.linking_tool(employee_tool)
+
+            if tool_linking:
+                return JSONResponse(status_code=status.HTTP_200_OK, content={"msg": "The tool completed successfully!"})
+            else:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "The tool is not completed!"})
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "The tool does not exist!"})
