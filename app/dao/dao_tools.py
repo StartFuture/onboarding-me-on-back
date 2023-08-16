@@ -8,7 +8,7 @@ def select_tools(id: int):
     connection, cursor = connect_database()
     
     query = f"""
-    SELECT t.name, t.score FROM Tool t
+    SELECT t.name, t.link_download, t.score FROM Tool t
     left join Game g on g.id = t.game_id 
     left join GamifiedJourney gj on gj.id = g.gamified_journey_id 
     left join Company c on c.id = gj.company_id 
@@ -207,4 +207,24 @@ def verify_if_company_exists(company_id: int):
             return True
         
     return False
-    
+
+
+def linking_tool(nick_name: str, tool_id: int, employee_id: int):
+
+    connection, cursor = connect_database()
+
+    query = f"""
+    INSERT INTO Employee_Tool (employee_id, tool_id, nick_name)
+    VALUES ({employee_id}, {tool_id}, '{nick_name}');
+    """
+
+    try:
+        cursor.execute(query)
+    except Exception as error:
+        connection.close()
+        return False
+    else:
+        connection.commit()
+        connection.close()
+
+        return True
