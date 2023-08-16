@@ -13,7 +13,7 @@ router = APIRouter(
         )
 
 
-@router.get("/{employee_id}")
+@router.get("/score")
 def get_final_score(employee_id: int):
     
     employee_exists = dao.verify_employee_exists(employee_id)
@@ -31,7 +31,7 @@ def get_final_score(employee_id: int):
     
     
 
-@router.post("/register") 
+@router.post("/register/score") 
 def register_score(employee_id: int):
 
     employee_exists = dao.verify_employee_exists(employee_id)
