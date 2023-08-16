@@ -5,7 +5,7 @@ from fastapi import APIRouter,status, HTTPException
 from fastapi.responses import JSONResponse
 
 from app import utils
-from app.schemas.tool import Tool
+from app.schemas.tool import Tool, EmployeeTool
 
 
 router = APIRouter(
@@ -95,9 +95,22 @@ def register_category_tool(category_tool: CategoryTool):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "The category has not been registered!"})
     
 
-#@router.post("/linking/{nick_name}")
-#def confirm_linking():
+@router.post("/linking")
+def complete_tool(employee_tool: EmployeeTool):
 
-    #tool_linking = 
+    tool_exists = dao.verify_tool_exists(id_tool=employee_tool.tool_id)
 
-    #return True
+    if tool_exists:
+        tool_completed = dao.verify_tool_completed(tool_id=employee_tool.tool_id)
+
+        if tool_completed:
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"msg": "This tool has already been completed!"})
+        else:
+            tool_linking = dao.linking_tool(employee_tool)
+
+            if tool_linking:
+                return JSONResponse(status_code=status.HTTP_200_OK, content={"msg": "The tool completed successfully!"})
+            else:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "The tool is not completed!"})
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "The tool does not exist!"})
