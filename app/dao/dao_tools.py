@@ -179,15 +179,111 @@ def insert_category_tool(category_tool: CategoryTool):
 
         return category_tool_id
 
-
-def verify_if_category_exists(category_tool: CategoryTool):
+def update_category_tool(category_tool: CategoryTool):
     
     connection, cursor = connect_database()
     
-    query =f"""
-    SELECT name From CategoryTool ct WHERE name = '{category_tool.name}'
+    query = f"""
+    UPDATE CategoryTool
+    SET name = '{category_tool.name}'
+    WHERE id = {category_tool.category_tool_id}
     ;
     """
+
+    try:
+        cursor.execute(query)
+        
+    except Exception as error:
+        connection.close()
+        return False
+    
+    else:
+        
+        connection.commit()
+        connection.close()
+
+        return True
+    
+    
+def delete_category_tool(category_tool_id: int):
+    
+    connection, cursor = connect_database()
+    
+    query = f"""
+    SELECT t.id FROM onboarding_me.CategoryTool ct
+    left join Tool t on t.category_id = ct.id
+    WHERE ct.id= {category_tool_id}
+    ;
+    """
+    
+    try:
+        cursor.execute(query)
+        
+    except Exception as error:
+        connection.close()
+        return False
+    
+    else:
+        
+        list_tools_id = cursor.fetchall()
+        ids = [tool['id'] for tool in list_tools_id]
+ 
+        placeholder = ','.join(['%s'] * len(ids))
+        
+        query = f"""
+        DELETE FROM Tool  
+        WHERE category_id = %s AND id IN ({placeholder});
+        ;
+        """
+        
+        try:
+            cursor.execute(query, [category_tool_id] + ids)
+            
+        except Exception as error:
+            connection.close()
+            return False
+        
+        else:
+            
+            query = f"""
+            DELETE FROM CategoryTool
+            WHERE id = {category_tool_id}
+            ;
+            """
+
+            try:
+                cursor.execute(query)
+                
+            except Exception as error:
+                connection.close()
+                return False
+
+            else:
+                
+                connection.commit()
+                connection.close()
+
+                return True
+    
+
+def verify_if_category_exists(category_name: str = None, category_id: int = None):
+    
+    connection, cursor = connect_database()
+    
+    if category_name:
+    
+        query =f"""
+        SELECT name From CategoryTool ct WHERE name = '{category_name}'
+        ;
+        """
+        
+    if category_id:
+        
+        query =f"""
+        SELECT id From CategoryTool ct WHERE id = '{category_id}'
+        ;
+        """
+    
     
     try:
         cursor.execute(query)

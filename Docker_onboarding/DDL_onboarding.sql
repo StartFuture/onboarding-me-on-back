@@ -203,7 +203,18 @@ CREATE TABLE IF NOT EXISTS Employee_Tool (
   id BIGINT AUTO_INCREMENT,
   employee_id BIGINT NOT NULL,
   tool_id BIGINT NOT NULL,
+  nick_name VARCHAR(255),
   FOREIGN KEY (employee_id) REFERENCES Employee (id),
   FOREIGN KEY (tool_id) REFERENCES Tool (id),
+  PRIMARY KEY (id)
+);
+
+CREATE TABLE IF NOT EXISTS Employee_Feedback (
+  id BIGINT AUTO_INCREMENT,
+  employee_id BIGINT NOT NULL,
+  grade BIGINT NOT NULL,
+  message VARCHAR(255),
+  feedback_type ENUM('gamefiedjourney','welcomekit') NOT NULL,
+  FOREIGN KEY (employee_id) REFERENCES Employee (id),
   PRIMARY KEY (id)
 );
