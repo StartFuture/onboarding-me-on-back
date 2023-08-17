@@ -1,5 +1,5 @@
 from app.dao.dao import connect_database
-from app.schemas.tool import Tool
+from app.schemas.tool import Tool, EmployeeTool
 from app.schemas.category_tool import CategoryTool
 
 
@@ -8,7 +8,7 @@ def select_tools(id: int):
     connection, cursor = connect_database()
     
     query = f"""
-    SELECT t.name, t.score FROM Tool t
+    SELECT t.name, t.link_download, t.score FROM Tool t
     left join Game g on g.id = t.game_id 
     left join GamifiedJourney gj on gj.id = g.gamified_journey_id 
     left join Company c on c.id = gj.company_id 
@@ -330,4 +330,46 @@ def verify_if_company_exists(company_id: int):
             return True
         
     return False
+
+
+def linking_tool(employee_tool: EmployeeTool):
+
+    connection, cursor = connect_database()
+
+    query = f"""
+    INSERT INTO Employee_Tool (employee_id, tool_id, nick_name)
+    VALUES ({employee_tool.employee_id}, {employee_tool.tool_id}, '{employee_tool.nick_name}');
+    """
+
+    try:
+        cursor.execute(query)
+    except Exception as error:
+        connection.close()
+        return False
+    else:
+        connection.commit()
+        connection.close()
+
+        return True
+
+
+def verify_tool_completed(tool_id: int = None, employee_tool_id: int = None):
+
+    connection, cursor = connect_database()
+
+    if employee_tool_id:
+        query = f"SELECT id FROM Employee_Tool WHERE id = {employee_tool_id}"
+    else:
+        query = f"SELECT id FROM Employee_Tool WHERE tool_id = {tool_id}"
     
+    try:
+        cursor.execute(query)
+    except Exception as error:
+        connection.close()
+        return False
+    else:
+        tool_id = cursor.fetchone()
+
+        connection.close()
+
+        return bool(tool_id)
