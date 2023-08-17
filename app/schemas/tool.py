@@ -10,3 +10,9 @@ class Tool(BaseModel):
     score: int
     game_id: int
     category_id: int
+
+class EmployeeTool(BaseModel):
+    employee_tool_id: Optional[int] = None
+    employee_id: int
+    tool_id: int
+    nick_name: str
