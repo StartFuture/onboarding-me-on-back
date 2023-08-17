@@ -1,11 +1,13 @@
 from app.dao import dao_tools as dao
 from app.schemas.category_tool import CategoryTool
+from app.schemas.tool import Tool, EmployeeTool
 
 from fastapi import APIRouter,status, HTTPException
 from fastapi.responses import JSONResponse
 
 from app import utils
-from app.schemas.tool import Tool, EmployeeTool
+
+
 
 
 router = APIRouter(
@@ -31,7 +33,7 @@ def get_tools(company_id: int):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "This company don't have tools!"})    
 
 
-@router.post("/register/") 
+@router.post("/register") 
 def register_tool(tool: Tool):
 
     tool.name = utils.string_to_lower(tool.name)
@@ -48,7 +50,7 @@ def register_tool(tool: Tool):
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "The tool has not been registered!"})
 
 
-@router.put("/update/")
+@router.put("/update")
 def modify_tool(tool: Tool):
 
     tool_exists = dao.verify_tool_exists(id_tool=tool.id_tool)
@@ -66,6 +68,22 @@ def modify_tool(tool: Tool):
             raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={"msg": "Missing id tool!"})
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg":"This tool is not registered!"}) 
+     
+    
+@router.delete("/delete")
+def del_tool(tool_id: int, game_id: int):   
+    
+    tool_exists = dao.verify_tool_exists(id_tool=tool_id)
+     
+    if not tool_exists:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "This tool dont exists!"})
+    
+    tool_deleted = dao.delete_tool(tool_id=tool_id, game_id=game_id)
+    
+    if tool_deleted:
+        return JSONResponse(status_code=status.HTTP_200_OK, content={"msg": "The tool has been deleted!"})
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "The tool has not been deleted!"})  
     
     
 @router.get("/category/{tool_id}")
@@ -82,7 +100,7 @@ def get_category_tool(tool_id: int):
 @router.post("/category/register")
 def register_category_tool(category_tool: CategoryTool):
 
-    category_exists = dao.verify_if_category_exists(category_tool)
+    category_exists = dao.verify_if_category_exists(category_name=category_tool.name)
     
     if category_exists:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"msg": "The category already exists!"})
@@ -94,6 +112,46 @@ def register_category_tool(category_tool: CategoryTool):
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "The category has not been registered!"})
     
+    
+@router.put("/category/update")
+def modify_category_tool(category_tool: CategoryTool):
+    
+    category_exists = dao.verify_if_category_exists(category_id=category_tool.category_tool_id)
+    
+    if not category_exists:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={"msg": "The category dont exists!"})
+    
+    
+    if not category_tool.category_tool_id:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={"msg": "Missing category id!"})
+    
+
+    category_modified = dao.update_category_tool(category_tool)
+    
+    if category_modified:
+        return JSONResponse(status_code=status.HTTP_200_OK, content={"msg": "The category has been modified!"})
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "The category has not been modified!"})
+    
+    
+    
+@router.delete("/category/delete")
+def del_category_tool(category_tool_id: int):
+    
+    category_exists = dao.verify_if_category_exists(category_id=category_tool_id)
+    
+    if not category_exists:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={"msg": "The category dont exists!"})
+    
+    category_deleted = dao.delete_category_tool(category_tool_id=category_tool_id)
+
+    if category_deleted:
+        return JSONResponse(status_code=status.HTTP_200_OK, content={"msg": "The category has been deleted!"})
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "The category has not been deleted!"})
+    
+      
+=======
 
 @router.post("/linking")
 def complete_tool(employee_tool: EmployeeTool):
@@ -114,3 +172,4 @@ def complete_tool(employee_tool: EmployeeTool):
                 raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "The tool is not completed!"})
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "The tool does not exist!"})
+
