@@ -1,6 +1,6 @@
 from app.dao import dao_tools as dao
 from app.schemas.category_tool import CategoryTool
-from app.schemas.tool import Tool
+from app.schemas.tool import Tool, EmployeeTool
 
 from fastapi import APIRouter,status, HTTPException
 from fastapi.responses import JSONResponse

@@ -7,6 +7,7 @@ from app.routers.quiz import router as router_quiz
 from app.routers.employee import router as router_employee
 
 
+
 app = FastAPI()
 
 
@@ -32,3 +33,4 @@ app.include_router(router=router_company)
 app.include_router(router=router_tool)
 app.include_router(router=router_quiz)
 app.include_router(router=router_employee)
+
