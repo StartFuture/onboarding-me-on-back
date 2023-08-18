@@ -1,7 +1,8 @@
 from pydantic import BaseModel, Field
 from typing import Optional
 
-link_video_pattern = r"(https\:\/\/)?www\.youtube\.com\/watch\?v\=[A-z0-9]+"
+
+link_video_pattern = r"(https://)?www.youtube.com/watch?v=[A-z0-9]+"
 quiz_type_pattern = r"culture|principle"
 
 
