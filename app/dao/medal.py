@@ -1,6 +1,6 @@
 from app.dao.dao import connect_database
 
-def select_video_company(id: int):
+def select_medal(medal_id: int):
     
     connection, cursor = connect_database()
     
@@ -21,7 +21,7 @@ def select_video_company(id: int):
     return video_company
 
 
-def insert_video_company(id: int, link: str):
+def insert_medal(medal_id: int, link: str):
     
     connection, cursor = connect_database()
     
@@ -36,7 +36,7 @@ def insert_video_company(id: int, link: str):
         connection.commit()
         connection.close()
 
-def modify_video_company(id: int, new_link: str):
+def insert_medal(medal_id: int, new_link: str):
     
     connection, cursor = connect_database()
     
