@@ -31,7 +31,7 @@ def insert_video_company(company_id: int, link: str):
     try:
         cursor.execute(query)
     except:
-        None
+        return None
     finally:
         connection.commit()
         connection.close()
@@ -49,7 +49,7 @@ def modify_video_company(company_id: int, new_link: str):
     try:
         cursor.execute(query)
     except:
-        None
+        return None
     finally:
         connection.commit()
         connection.close()

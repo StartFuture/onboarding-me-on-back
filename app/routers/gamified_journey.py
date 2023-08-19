@@ -15,7 +15,7 @@ router = APIRouter(
                    )
 
 
-@router.get("/get-video-company/{game_id}")
+@router.get("/get-video-company/{company_id}")
 def get_video_company(id: int):
     
     video = dao.select_video_company(company_id=id)
@@ -26,7 +26,7 @@ def get_video_company(id: int):
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "This company don't have a video!"})
 
 @router.post("/create")
-def create_video_company(game_id: int, link: str):
+def create_video_company(company_id: int, link: str):
     
     video = dao.insert_video_company(company_id=id)
 
@@ -37,7 +37,7 @@ def create_video_company(game_id: int, link: str):
 
 
 @router.post("/update")
-def update_video_company(game_id: int, new_link: str):
+def update_video_company(company_id: int, new_link: str):
     
     video = dao.modify_video_company(company_id=id)
 
