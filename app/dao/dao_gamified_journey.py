@@ -6,7 +6,7 @@ def select_video_company(company_id: int):
     
     query = f"""
     SELECT welcome_video_link, company_id from GamifiedJourney
-	WHERE id = '{company_id}';
+	WHERE company_id = '{company_id}';
     """
 
     try:
