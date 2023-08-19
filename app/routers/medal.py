@@ -4,7 +4,7 @@ from fastapi.responses import JSONResponse
 from app.dao.dao_medal import select_medal, insert_medal, modify_medal
 from app.schemas.medal import Medal 
 from fastapi import APIRouter
-
+medal_user
 
 router = APIRouter(
     prefix="/medal",
@@ -23,6 +23,7 @@ def get_medal(medal_id: int):
     if medal_user:
         return JSONResponse(status_code=status.HTTP_200_OK, content = medal_user)
     else:
+        medal_user = create_medal(medal_id=medal_id)
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "This user doesn't have a medal!"})
 
 @router.post("/create-medal")
@@ -32,7 +33,7 @@ def create_medal(medal: Medal):
     if insert_medal_user:
         return JSONResponse(status_code=status.HTTP_200_OK, content=insert_medal_user)
     else:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "This user doesn't have a medal!"})
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "Unable to create the medal for the user!"})
 
 
 
