@@ -25,7 +25,7 @@ def get_video_company(id: int):
     else:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "This company don't have a video!"})
 
-@router.post("/create")
+@router.put("/create")
 def create_video_company(company_id: int, link: str):
     
     video = dao.insert_video_company(company_id=id)
