@@ -6,7 +6,7 @@ def select_medal(medal_id: int):
     
     query = f"""
     SELECT image, medal_id from Medal
-	WHERE id = '{id}';
+	WHERE medal_id = '{medal_id}';
     """
 
     try:
@@ -25,9 +25,9 @@ def insert_medal(medal_id: int, medal_image: blob):
     connection, cursor = connect_database()
     
     query = f"""
-    insert into Medal(image) values ({medal_image},{medal_id});
-    set image = '{medal}'
-	WHERE medal_id = '{id}';
+    INSERT INTO Medal(image, medal_id) VALUES ('{medal_image}','{medal_id}');
+    set image = '{medal_image}'
+	WHERE medal_id = '{medal_id}';
     """
     
     try:
@@ -38,14 +38,14 @@ def insert_medal(medal_id: int, medal_image: blob):
         connection.commit()
         connection.close()
 
-def modify_medal(medal_id: int, new_link: str):
+def modify_medal(medal_id: int, medal_image: blob):
     
     connection, cursor = connect_database()
     
     query = f"""
-    insert into Medal(image) values ({medal_image},{medal_id});
-    set image = '{medal}'
-	WHERE medal_id = '{id}';
+    UPDATE Medal(image, medal_id) 
+    set image = '{medal_image}'
+	WHERE medal_id = '{medal_id}';
     """
     
     try:
