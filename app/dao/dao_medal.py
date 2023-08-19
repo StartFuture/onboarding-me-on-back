@@ -5,28 +5,29 @@ def select_medal(medal_id: int):
     connection, cursor = connect_database()
     
     query = f"""
-    SELECT welcome_video_link, company_id from GamifiedJourney
+    SELECT image, medal_id from Medal
 	WHERE id = '{id}';
     """
 
     try:
         cursor.execute(query)
     except:
-        video_company = None
+        image = None
     else:
-        video_company = cursor.fetchone()
+        image = cursor.fetchone()
     finally:
+        connection.commit()
         connection.close()
 
-    return video_company
 
-
-def insert_medal(medal_id: int, link: str):
+def insert_medal(medal_id: int, medal_image: blob):
     
     connection, cursor = connect_database()
     
     query = f"""
-    insert into GamifiedJourney(welcome_video_link, company_id ) values ({link},{id});
+    insert into Medal(image) values ({medal_image},{medal_id});
+    set image = '{medal}'
+	WHERE medal_id = '{id}';
     """
     try:
         cursor.execute(query)
