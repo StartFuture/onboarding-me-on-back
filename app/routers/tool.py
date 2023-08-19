@@ -151,7 +151,6 @@ def del_category_tool(category_tool_id: int):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "The category has not been deleted!"})
     
       
-=======
 
 @router.post("/linking")
 def complete_tool(employee_tool: EmployeeTool):
