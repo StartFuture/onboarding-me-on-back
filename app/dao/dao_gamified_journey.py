@@ -16,6 +16,7 @@ def select_video_company(company_id: int):
     else:
         video_company = cursor.fetchone()
     finally:
+        connection.commit()
         connection.close()
 
     return video_company
@@ -26,7 +27,7 @@ def insert_video_company(company_id: int, link: str):
     connection, cursor = connect_database()
     
     query = f"""
-    insert into GamifiedJourney(welcome_video_link, company_id ) values ({link},{company_id});
+    insert into GamifiedJourney(welcome_video_link, company_id) values ({link},{company_id});
     """
     try:
         cursor.execute(query)
@@ -41,7 +42,7 @@ def modify_video_company(company_id: int, new_link: str):
     connection, cursor = connect_database()
     
     query = f"""
-    UPDATE GamifiedJourney(welcome_video_link, company_id )
+    UPDATE GamifiedJourney(welcome_video_link, company_id)
 	set welcome_video_link = '{new_link}'
 	WHERE company_id = '{company_id}';
     """
