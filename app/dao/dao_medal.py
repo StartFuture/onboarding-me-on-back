@@ -29,6 +29,7 @@ def insert_medal(medal_id: int, medal_image: blob):
     set image = '{medal}'
 	WHERE medal_id = '{id}';
     """
+    
     try:
         cursor.execute(query)
     except:
@@ -37,14 +38,14 @@ def insert_medal(medal_id: int, medal_image: blob):
         connection.commit()
         connection.close()
 
-def insert_medal(medal_id: int, new_link: str):
+def modify_medal(medal_id: int, new_link: str):
     
     connection, cursor = connect_database()
     
     query = f"""
-    UPDATE GamifiedJourney(welcome_video_link, company_id )
-	set welcome_video_link = '{new_link}'
-	WHERE company_id = '{id}';
+    insert into Medal(image) values ({medal_image},{medal_id});
+    set image = '{medal}'
+	WHERE medal_id = '{id}';
     """
     
     try:

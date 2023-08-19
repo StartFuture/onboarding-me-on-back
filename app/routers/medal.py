@@ -26,7 +26,7 @@ def get_medal(medal_id: int):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "This user doesn't have a medal!"})
 
 @router.post("/create-medal")
-def create_medal(name: str, medal_id: int):
+def create_medal(medal: Medal):
     insert_medal_user = insert_medal(medal_id=id)
     
     if insert_medal_user:
@@ -36,8 +36,8 @@ def create_medal(name: str, medal_id: int):
 
 
 
-@router.post("/update-medal")
-def modify_medal(name: str, medal_id: int):
+@router.pt("/update-medal")
+def modify_medal(medal: Medal):
     modify_medal__user = modify_medal(medal_id=id)
     
     if modify_medal__user:
