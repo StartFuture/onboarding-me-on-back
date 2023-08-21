@@ -8,8 +8,6 @@ from fastapi.responses import JSONResponse
 from app import utils
 
 
-
-
 router = APIRouter(
     prefix="/tool",
     tags=[
