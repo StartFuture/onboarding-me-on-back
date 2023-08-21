@@ -148,8 +148,6 @@ def del_category_tool(category_tool_id: int):
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "The category has not been deleted!"})
     
-      
-=======
 
 @router.post("/linking")
 def complete_tool(employee_tool: EmployeeTool):
@@ -165,9 +163,24 @@ def complete_tool(employee_tool: EmployeeTool):
             tool_linking = dao.linking_tool(employee_tool)
 
             if tool_linking:
-                return JSONResponse(status_code=status.HTTP_200_OK, content={"msg": "The tool completed successfully!"})
+                score_exists = dao.verify_score_tool_exists(dao.get_game_id_tool(employee_tool))
+
+                if type(score_exists) == int:
+                    if score_exists == 1:
+                        score_update = dao.saving_tool_score(employee_tool, score_exists=True)
+                        if score_update:
+                            return JSONResponse(status_code=status.HTTP_200_OK, content={"msg": "The tool journey completed successfully!"})
+                        else:
+                            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"msg": "Error in score"})
+                    elif score_exists == 0:
+                        score_insert = dao.saving_tool_score(employee_tool)
+                        if score_insert:
+                            return JSONResponse(status_code=status.HTTP_200_OK, content={"msg": "The tool journey completed successfully!"})
+                        else:
+                            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"msg": "Error in score"})
+                else:
+                    raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"msg": "Error in score"})
             else:
                 raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "The tool is not completed!"})
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "The tool does not exist!"})
-
