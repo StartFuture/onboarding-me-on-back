@@ -491,3 +491,33 @@ def verify_score_tool_exists(game_id: int):
         connection.close()
 
         return 1 if bool(game_id) else 0
+
+
+def get_id_tools():
+
+    connection, cursor = connect_database()
+
+    query = f'SELECT id FROM Tool;'
+
+    try:
+        cursor.execute(query)
+    except Exception as error:
+        connection.close()
+        return None
+    else:
+        tools_id = cursor.fetchall()
+
+        connection.close()
+        
+        return tools_id
+
+
+def ended_game_tools(tools_id: list):
+
+    for tool_id in tools_id:
+        tool_id_completed = verify_tool_completed(tool_id=tool_id["id"])
+
+        if not tool_id_completed:
+            return False
+        
+    return True
