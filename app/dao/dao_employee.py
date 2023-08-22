@@ -276,7 +276,6 @@ def verify_score_quiz_exists(game_id: int):
         cursor.execute(query)
         
     except Exception as error:
-        print(error)
         connection.close()
         return False
     
