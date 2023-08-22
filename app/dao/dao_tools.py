@@ -1,5 +1,7 @@
+from datetime import datetime
+
 from app.dao.dao import connect_database
-from app.schemas.tool import Tool
+from app.schemas.tool import Tool, EmployeeTool
 from app.schemas.category_tool import CategoryTool
 
 
@@ -8,7 +10,7 @@ def select_tools(id: int):
     connection, cursor = connect_database()
     
     query = f"""
-    SELECT t.name, t.score FROM Tool t
+    SELECT t.name, t.link_download, t.score FROM Tool t
     left join Game g on g.id = t.game_id 
     left join GamifiedJourney gj on gj.id = g.gamified_journey_id 
     left join Company c on c.id = gj.company_id 
@@ -330,4 +332,162 @@ def verify_if_company_exists(company_id: int):
             return True
         
     return False
+
+
+def linking_tool(employee_tool: EmployeeTool):
+
+    connection, cursor = connect_database()
+
+    query = f"""
+    INSERT INTO Employee_Tool (employee_id, tool_id, nick_name)
+    VALUES ({employee_tool.employee_id}, {employee_tool.tool_id}, '{employee_tool.nick_name}');
+    """
+
+    try:
+        cursor.execute(query)
+    except Exception as error:
+        connection.close()
+        return False
+    else:
+        connection.commit()
+        connection.close()
+
+        return True
+
+
+def verify_tool_completed(tool_id: int = None, employee_tool_id: int = None):
+
+    connection, cursor = connect_database()
+
+    if employee_tool_id:
+        query = f"SELECT id FROM Employee_Tool WHERE id = {employee_tool_id}"
+    else:
+        query = f"SELECT id FROM Employee_Tool WHERE tool_id = {tool_id}"
     
+    try:
+        cursor.execute(query)
+    except Exception as error:
+        connection.close()
+        return False
+    else:
+        tool_id = cursor.fetchone()
+
+        connection.close()
+
+        return bool(tool_id)
+
+
+def get_tool_score(employee_tool: EmployeeTool):
+
+    connection, cursor = connect_database()
+
+    query = f"""
+    SELECT t.score FROM Employee_Tool et LEFT JOIN
+    Tool t ON t.id = {employee_tool.tool_id};
+    """
+
+    try:
+        cursor.execute(query)
+    except Exception as error:
+        connection.close()
+        return 0
+    else:
+        score = cursor.fetchone()
+
+        connection.close()
+
+        return score["score"]
+    
+def get_game_id_tool(employee_tool: EmployeeTool):
+
+    connection, cursor = connect_database()
+
+    query = f"""SELECT t.game_id FROM Employee_Tool et LEFT JOIN
+    Tool t ON t.id = {employee_tool.tool_id};
+    """
+
+    try:
+        cursor.execute(query)
+    except Exception as error:
+        connection.close()
+        return None
+    else:
+        game_id = cursor.fetchone()
+
+        connection.close()
+
+        return game_id["game_id"]
+    
+def sum_score_tools(game_id: int):
+
+    connection, cursor = connect_database()
+
+    query = f'SELECT total_points FROM Score WHERE game_id = {game_id}'
+
+    try:
+        cursor.execute(query)
+    except Exception as error:
+        connection.close
+        return None
+    else:
+        points = cursor.fetchone()
+
+        connection.close()
+
+        return points["total_points"]
+
+def saving_tool_score(employee_tool: EmployeeTool, score_exists: bool = False):
+
+    last_updated = datetime.now()
+
+    connection, cursor = connect_database()
+
+    score = get_tool_score(employee_tool)
+
+    game_id = get_game_id_tool(employee_tool)
+
+
+    if score_exists:
+        score += sum_score_tools(game_id)
+        query = f"""
+        UPDATE Score set total_points = {score}, last_updated = '{last_updated}'
+        WHERE game_id = {game_id};
+        """
+    else:
+        query = f"""
+        INSERT INTO Score (total_points, last_updated, employee_id, game_id)
+        VALUES ({score}, '{last_updated}', {employee_tool.employee_id}, {game_id});
+        """
+    
+    try:
+        cursor.execute(query)
+    except Exception as error:
+        connection.close()
+        return False
+    else:
+        connection.commit()
+        connection.close()
+
+        return True
+    
+    
+
+def verify_score_tool_exists(game_id: int):
+
+    connection, cursor = connect_database()
+
+    query = f"""
+    SELECT id FROM Score WHERE game_id = {game_id}
+    """
+
+    try:
+        cursor.execute(query)
+    except Exception as error:
+        connection.close()
+        return False
+    else:
+        game_id = cursor.fetchone()
+
+        connection.close()
+
+        return 1 if bool(game_id) else 0
