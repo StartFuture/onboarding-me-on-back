@@ -228,16 +228,27 @@ def update_alternative(alternatives: list[Alternative], quiz_id: int):
     return True
 
 
-def verify_if_game_id_exists(quiz: Quiz):
+def verify_if_game_id_exists(quiz: Quiz = None, game_id: int = None):
     
     connection, cursor = connect_database()
     
-    query = f"""
-    SELECT g.id FROM Quiz q
-    left join Game g on g.id = q.game_id 
-    WHERE g.id = {quiz.game_id}
-    ;
-    """
+    if quiz:
+        
+        query = f"""
+        SELECT g.id FROM Quiz q
+        left join Game g on g.id = q.game_id 
+        WHERE g.id = {quiz.game_id}
+        ;
+        """
+    
+    if game_id:
+        
+        query = f"""
+        SELECT g.id FROM Quiz q
+        left join Game g on g.id = q.game_id 
+        WHERE g.id = {game_id}
+        ;
+        """
     
     try:
         cursor.execute(query)
@@ -253,14 +264,24 @@ def verify_if_game_id_exists(quiz: Quiz):
         return game_id_exists
     
      
-def verify_if_quiz_id_exists(quiz: Quiz):
+def verify_if_quiz_id_exists(quiz: Quiz = None, quiz_id: int = None):
     
     connection, cursor = connect_database()
     
-    query = f"""
-    SELECT id FROM Quiz
-    WHERE id = {quiz.quiz_id};
-    """
+    if quiz:
+
+        query = f"""
+        SELECT id FROM Quiz
+        WHERE id = {quiz.quiz_id};
+        """
+    
+    if quiz_id:
+
+        query = f"""
+        SELECT id FROM Quiz
+        WHERE id = {quiz_id};
+        """
+    
     
     try:
         cursor.execute(query)
