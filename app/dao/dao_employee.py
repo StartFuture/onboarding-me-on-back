@@ -53,7 +53,6 @@ def insert_employee_score(employee_id: int):
             cursor.execute(query)
         
         except Exception as error:
-            print(error)
             connection.close()
             return False
         
