@@ -5,11 +5,8 @@ from app.routers.company import router as router_company
 from app.routers.tool import router as router_tool
 from app.routers.quiz import router as router_quiz
 from app.routers.gamified_journey import router as router_gamified_journey
-<<<<<<< HEAD
 from app.routers.medal_score import router as router_medal
 
-=======
->>>>>>> main
 
 
 
