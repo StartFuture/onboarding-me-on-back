@@ -19,7 +19,7 @@ router = APIRouter(
 @router.get("/{company_id}")
 def get_quiz(company_id: int):
     
-    quiz = dao.select_quiz(company_id)
+    quiz = dao.select_quiz(company_id=company_id)
     
     if quiz:
         return JSONResponse(status_code=status.HTTP_200_OK, content=quiz)

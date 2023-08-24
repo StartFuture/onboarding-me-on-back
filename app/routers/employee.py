@@ -2,6 +2,7 @@ from app.dao import dao_employee as dao
 from app.dao.dao_quiz import verify_if_quiz_id_exists, verify_if_game_id_exists
 from app.schemas.quiz import EmployeeAlternative
 
+
 from fastapi import APIRouter,status, HTTPException
 from fastapi.responses import JSONResponse
 
@@ -87,4 +88,35 @@ def register_score(employee_alternative: EmployeeAlternative, quiz_id: int):
         else:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"msg": "Answer incorrect!"})
 
+
+@router.get("/medal")
+def get_employee_medals(employee_id: int, game_id: int):
     
+    employee_exists = dao.verify_employee_exists(employee_id)
+    
+    if not employee_exists:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"msg": "This employee not exists!"})  
+      
+    game_id_exists = verify_if_game_id_exists(game_id=game_id)
+    
+    if not game_id_exists:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"msg": "This game not exists!"})    
+    
+    employee_medals = dao.get_employee_medals(employee_id, game_id)
+    
+    
+    if employee_medals:
+        return JSONResponse(status_code=status.HTTP_200_OK, content=employee_medals)
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "This employee dont have medals!"})    
+ 
+  
+@router.post("/register/medal") 
+def register_medal(score_id: int, game_id: int, employee_id: int): 
+      
+    medal_score_registered = dao.insert_medal_score(employee_id=employee_id, game_id=game_id, score_id=score_id)
+    
+    if medal_score_registered:
+        return JSONResponse(status_code=status.HTTP_200_OK, content={"msg": "The medal has been registered!"})
+    else:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"msg": "Error!"})

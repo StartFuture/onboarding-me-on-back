@@ -1,4 +1,5 @@
 from datetime import datetime
+from decimal import Decimal
 
 from app.dao.dao import connect_database
 from app.schemas.quiz import EmployeeAlternative
@@ -124,7 +125,7 @@ def saving_employee_score(employee_alternative: EmployeeAlternative, score_exist
             score += sum_score_quiz(game_id)
             query = f"""
             UPDATE Score set total_points = {score}, last_updated = '{last_updated}'
-            WHERE game_id = {game_id}
+            WHERE game_id = {game_id} and employee_id = {employee_alternative.employee_id}
             ;
             """
         else: 
@@ -176,9 +177,121 @@ def get_total_score(employee_id: int, game_id: int):
          score = cursor.fetchone()
          connection.close()
          
-         return score    
+         score_value = score['total_points']
+         
+         return score_value   
+     
+     
+def insert_medal_score(employee_id: int, game_id:int, score_id: int):
+    
+    from app.dao.dao_quiz import get_max_score, employee_score
+    
+    connection, cursor = connect_database()  
+    
+    max_score = get_max_score(game_id=game_id)
+        
+    employee_total_score = employee_score(employee_id=employee_id,game_id=game_id)
+    
+    bronze_medal =  max_score * Decimal(0.50)
+    
+    silver_medal =  max_score * Decimal(0.90)
+    
+    
+    if employee_total_score <= bronze_medal:
+        
+        query = f"""
+        INSERT INTO onboarding_me.Medal_Score
+        (medal_id, score_id)
+        VALUES(3, {score_id});
+        """
+        
+    elif employee_total_score <= silver_medal:
+        
+        query = f"""
+        INSERT INTO onboarding_me.Medal_Score
+        (medal_id, score_id)
+        VALUES(2, {score_id});
+        """
+        
+    else:
+        
+        query = f"""
+        INSERT INTO onboarding_me.Medal_Score
+        (medal_id, score_id)
+        VALUES(1, {score_id});
+        """
+
+
+    try:
+        
+        cursor.execute(query)
+        
+    except Exception as error:
+        connection.close()
+        return False    
+    
+    else: 
+        
+        connection.commit()
+        connection.close()
+        
+        return True  
+    
+
+def get_employee_medals(employee_id: int, game_id: int):
+    
+    connection, cursor = connect_database()
+    
+    query = f"""
+    SELECT medal_id FROM Medal_Score ms
+    RIGHT JOIN Score s ON s.id = ms.score_id 
+    RIGHT JOIN Employee e ON e.id = s.employee_id 
+    WHERE e.id = {employee_id} and s.game_id = {game_id}
+    ;
+    """
+    
+    try:
+        cursor.execute(query)
+
+    except Exception as error:
+        connection.close()
+        return None
+
+    else:
+        
+        medals_list = cursor.fetchall()
+        medals_id = []
+        
+        for medals in medals_list:
+            medals_id.append(medals['medal_id']) 
         
         
+        placeholder = ','.join(['%s'] * len(medals_list))
+        
+        query = f"""
+        SELECT m.name, m.image FROM Medal m 
+        RIGHT JOIN Medal_Score ms on ms.medal_id = m.id 
+        RIGHT JOIN Score s ON s.id = ms.score_id 
+        RIGHT JOIN Employee e ON e.id = s.employee_id 
+        WHERE m.id IN ({placeholder}) and e.id = %s
+        ;
+        """
+        
+        try:
+            cursor.execute(query, medals_id + [employee_id])
+
+        except Exception as error:
+            connection.close()
+            return []
+
+        else:
+            
+             employee_medals_list = cursor.fetchall()
+             connection.close()
+             
+             return employee_medals_list
+
+          
 def verify_employee_exists(employee_id: int):
     
     connection, cursor = connect_database()
@@ -255,6 +368,7 @@ def verify_quiz_completed(quiz_id: int):
         return False
     
     else:
+        
         quiz_completed = cursor.fetchone()
         connection.close()
 
@@ -280,6 +394,7 @@ def verify_score_quiz_exists(game_id: int):
         return False
     
     else:
+        
         game_id = cursor.fetchone()
         connection.close()
 
