@@ -493,11 +493,15 @@ def verify_score_tool_exists(game_id: int):
         return 1 if bool(game_id) else 0
 
 
-def get_id_tools():
+def get_id_tools(gamified_joruney: int):
 
     connection, cursor = connect_database()
 
-    query = f'SELECT id FROM Tool;'
+    query = f"""
+    SELECT COUNT(t.id) FROM GamifiedJourney gj  
+    LEFT JOIN Game g ON g.gamified_journey_id  = {gamified_joruney}
+    LEFT JOIN Tool t ON t.game_id = g.id;
+    """
 
     try:
         cursor.execute(query)
@@ -505,19 +509,30 @@ def get_id_tools():
         connection.close()
         return None
     else:
-        tools_id = cursor.fetchall()
+        tools_id = cursor.fetchone()
 
         connection.close()
         
-        return tools_id
+        return tools_id["COUNT(t.id)"]
 
 
-def ended_game_tools(tools_id: list):
+def ended_game_tools(employee_id: int):
 
-    for tool_id in tools_id:
-        tool_id_completed = verify_tool_completed(tool_id=tool_id["id"])
+    connection, cursor = connect_database()
 
-        if not tool_id_completed:
-            return False
-        
-    return True
+    query = f"""
+    SELECT COUNT(et.id) FROM Employee e LEFT JOIN 
+    Employee_Tool et ON et.employee_id = {employee_id};
+    """
+
+    try:
+        cursor.execute(query)
+    except Exception as error:
+        connection.close()
+        return None
+    else:
+        tools_completed = cursor.fetchone()
+
+        connection.close()
+
+        return tools_completed["COUNT(et.id)"]
