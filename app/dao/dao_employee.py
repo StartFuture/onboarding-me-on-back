@@ -292,15 +292,14 @@ def get_employee_medals(employee_id: int, game_id: int):
              return employee_medals_list
 
           
-def verify_employee_exists(employee_id: int):
+def verify_employee_exists(employee_id: int, company_id: int):
     
     connection, cursor = connect_database()
     
     query = f"""
     SELECT id
     FROM onboarding_me.Employee
-    WHERE id = {employee_id}
-    ;
+    WHERE id = {employee_id} and company_id = {company_id};
     """
     
     try:
@@ -320,14 +319,14 @@ def verify_employee_exists(employee_id: int):
     return False
 
 
-def verify_alternative_exists(alternative_id: int):
+def verify_alternative_exists(alternative_id: int, quiz_id: int):
     
     connection, cursor = connect_database()
     
     query = f"""
     SELECT id
     FROM onboarding_me.Alternative
-    WHERE id = {alternative_id}
+    WHERE id = {alternative_id} and quiz_id = {quiz_id} 
     ;
     """
     
@@ -348,7 +347,7 @@ def verify_alternative_exists(alternative_id: int):
     return False
 
 
-def verify_quiz_completed(quiz_id: int):
+def verify_quiz_completed(quiz_id: int, employee_id: int):
 
     connection, cursor = connect_database()
 
@@ -356,7 +355,7 @@ def verify_quiz_completed(quiz_id: int):
     SELECT a.id
     FROM onboarding_me.Employee_Alternative ea
     LEFT JOIN Alternative a on a.id = ea.alternative_id 
-    WHERE a.quiz_id = {quiz_id}
+    WHERE a.quiz_id = {quiz_id} and ea.employee_id = {employee_id}
     ;
     """
     
@@ -378,12 +377,13 @@ def verify_quiz_completed(quiz_id: int):
     return False
     
     
-def verify_score_quiz_exists(game_id: int):
+def verify_score_quiz_exists(game_id: int, employee_id: int):
 
     connection, cursor = connect_database()
 
     query = f"""
-    SELECT id FROM Score WHERE game_id = {game_id};
+    SELECT id FROM Score WHERE game_id = {game_id} and employee_id = {employee_id}
+    ;
     """
 
     try:
@@ -399,3 +399,16 @@ def verify_score_quiz_exists(game_id: int):
         connection.close()
 
         return 1 if bool(game_id) else 0
+    
+    
+def finished_quiz_game(quizzes_id: list, employee_id: int):
+
+    for quiz_id in quizzes_id:
+        
+        quiz_id_completed = verify_quiz_completed(quiz_id=quiz_id["id"], employee_id=employee_id)
+
+        if not quiz_id_completed:
+            return False
+
+    return True    
+    

@@ -278,7 +278,7 @@ def verify_if_game_id_exists(quiz: Quiz = None, game_id: int = None):
         query = f"""
         SELECT g.id FROM Quiz q
         left join Game g on g.id = q.game_id 
-        WHERE g.id = {game_id}
+        WHERE g.id = {game_id}  
         ;
         """
     
@@ -296,7 +296,7 @@ def verify_if_game_id_exists(quiz: Quiz = None, game_id: int = None):
         return game_id_exists
     
      
-def verify_if_quiz_id_exists(quiz: Quiz = None, quiz_id: int = None):
+def verify_if_quiz_id_exists(company_id: int, quiz: Quiz = None, quiz_id: int = None):
     
     connection, cursor = connect_database()
     
@@ -307,11 +307,15 @@ def verify_if_quiz_id_exists(quiz: Quiz = None, quiz_id: int = None):
         WHERE id = {quiz.quiz_id};
         """
     
-    if quiz_id:
+    if quiz_id and company_id:
 
         query = f"""
-        SELECT id FROM Quiz
-        WHERE id = {quiz_id};
+        SELECT q.id FROM Quiz q  
+        RIGHT JOIN Game g ON g.id = q.game_id 
+        RIGHT JOIN GamifiedJourney gj  ON gj.id = g.gamified_journey_id 
+        RIGHT JOIN Company c ON c.id = gj.company_id 
+        WHERE q.id = {quiz_id} and c.id = {company_id}
+        ;
         """
     
     

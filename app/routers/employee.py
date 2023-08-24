@@ -16,9 +16,9 @@ router = APIRouter(
 
 
 @router.get("/score")
-def get_final_score(employee_id: int, game_id: int):
+def get_final_score(employee_id: int, game_id: int, company_id):
     
-    employee_exists = dao.verify_employee_exists(employee_id)
+    employee_exists = dao.verify_employee_exists(employee_id, company_id)
     
     if not employee_exists:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"msg": "This employee not exists!"})  
@@ -38,24 +38,24 @@ def get_final_score(employee_id: int, game_id: int):
     
 
 @router.post("/register/score") 
-def register_score(employee_alternative: EmployeeAlternative, quiz_id: int):
+def register_score(employee_alternative: EmployeeAlternative, quiz_id: int, company_id: int):
 
-    employee_exists = dao.verify_employee_exists(employee_alternative.employee_id)
+    employee_exists = dao.verify_employee_exists(employee_alternative.employee_id, company_id=company_id)
     
     if not employee_exists:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"msg": "This employee not exists!"})
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"msg": "This employee not exists!"}) 
     
-    alternative_exists = dao.verify_alternative_exists(employee_alternative.alternative_id)
-    
-    if not alternative_exists:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"msg": "This alternative not exists!"})
-    
-    quiz_exists = verify_if_quiz_id_exists(quiz_id=quiz_id)
+    quiz_exists = verify_if_quiz_id_exists(quiz_id=quiz_id, company_id=company_id)
     
     if not quiz_exists:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"msg": "This quiz not exists!"})
     
-    quiz_completed = dao.verify_quiz_completed(quiz_id)
+    alternative_exists = dao.verify_alternative_exists(employee_alternative.alternative_id, company_id=company_id)
+    
+    if not alternative_exists:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"msg": "This alternative not exists!"})
+    
+    quiz_completed = dao.verify_quiz_completed(quiz_id, employee_alternative.employee_id)
     
     if quiz_completed:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"msg": "This quiz has already been completed!"})
@@ -65,7 +65,7 @@ def register_score(employee_alternative: EmployeeAlternative, quiz_id: int):
     if not answer_registered:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"msg": "ERROR!"})
     
-    score_exists = dao.verify_score_quiz_exists(dao.get_game_id_quiz(employee_alternative.alternative_id))
+    score_exists = dao.verify_score_quiz_exists(dao.get_game_id_quiz(employee_alternative.alternative_id), employee_id=employee_alternative.employee_id)
 
     if type(score_exists) != int:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"msg": "Error in score"})
@@ -90,9 +90,9 @@ def register_score(employee_alternative: EmployeeAlternative, quiz_id: int):
 
 
 @router.get("/medal")
-def get_employee_medals(employee_id: int, game_id: int):
+def get_employee_medals(employee_id: int, game_id: int, company_id: int):
     
-    employee_exists = dao.verify_employee_exists(employee_id)
+    employee_exists = dao.verify_employee_exists(employee_id, company_id)
     
     if not employee_exists:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"msg": "This employee not exists!"})  
@@ -104,7 +104,6 @@ def get_employee_medals(employee_id: int, game_id: int):
     
     employee_medals = dao.get_employee_medals(employee_id, game_id)
     
-    
     if employee_medals:
         return JSONResponse(status_code=status.HTTP_200_OK, content=employee_medals)
     else:
@@ -112,7 +111,12 @@ def get_employee_medals(employee_id: int, game_id: int):
  
   
 @router.post("/register/medal") 
-def register_medal(score_id: int, game_id: int, employee_id: int): 
+def register_medal(score_id: int, game_id: int, employee_id: int, company_id: int): 
+    
+    employee_exists = dao.verify_employee_exists(employee_id, company_id)
+    
+    if not employee_exists:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"msg": "This employee not exists!"}) 
       
     medal_score_registered = dao.insert_medal_score(employee_id=employee_id, game_id=game_id, score_id=score_id)
     
