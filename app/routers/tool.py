@@ -169,13 +169,13 @@ def complete_tool(employee_tool: EmployeeTool):
                     if score_exists == 1:
                         score_update = dao.saving_tool_score(employee_tool, score_exists=True)
                         if score_update:
-                            return JSONResponse(status_code=status.HTTP_200_OK, content={"msg": "The tool journey completed successfully!"})
+                            return JSONResponse(status_code=status.HTTP_200_OK, content={"msg": "The tool has been successfully completed!"})
                         else:
                             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"msg": "Error in score"})
                     elif score_exists == 0:
                         score_insert = dao.saving_tool_score(employee_tool)
                         if score_insert:
-                            return JSONResponse(status_code=status.HTTP_200_OK, content={"msg": "The tool journey completed successfully!"})
+                            return JSONResponse(status_code=status.HTTP_200_OK, content={"msg": "The tool has been successfully completed!"})
                         else:
                             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"msg": "Error in score"})
                 else:
@@ -184,3 +184,19 @@ def complete_tool(employee_tool: EmployeeTool):
                 raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "The tool is not completed!"})
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "The tool does not exist!"})
+
+
+@router.get("/game/completed")
+def game_tools_completed():
+
+    tools_id = dao.get_id_tools()
+
+    if tools_id == None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "The tools were not found! "})
+    else:
+        game_tools_completed = dao.ended_game_tools(tools_id)
+
+        if game_tools_completed:
+            return JSONResponse(status_code=status.HTTP_200_OK, content={"msg": "The tool game has been successfully completed!"})
+        else:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "The tool game has not been completed!"})
