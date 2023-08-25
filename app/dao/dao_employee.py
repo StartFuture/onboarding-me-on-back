@@ -309,7 +309,7 @@ def verify_employee_exists(employee_id: int, company_id: int):
              return True
     
     return False
-
+  
 
 def verify_alternative_exists(alternative_id: int, quiz_id: int):
     
@@ -448,4 +448,4 @@ def finished_quiz_game(employee_id: int, game_id: int):
             return False
            
     return True
-    
+ 
