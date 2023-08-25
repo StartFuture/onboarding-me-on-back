@@ -3,6 +3,7 @@ from decimal import Decimal
 
 from app.dao.dao import connect_database
 from app.schemas.quiz import EmployeeAlternative
+from app.dao.dao_tools import sum_score
 
 
 def insert_employee_answer(employee_alternative: EmployeeAlternative):
@@ -82,27 +83,6 @@ def get_game_id_quiz(alternative_id = int):
 
         return game_id["game_id"]
      
- 
-#USAR FUNÇÂO JÀ CRIADA PELO VICTOR APÓS ACEITAR O PR        
-def sum_score_quiz(game_id: int):
-
-    connection, cursor = connect_database()
-
-    query = f'SELECT total_points FROM Score WHERE game_id = {game_id};'
-
-    try:
-        cursor.execute(query)
-        
-    except Exception as error:
-        connection.close
-        return None
-    
-    else:
-        points = cursor.fetchone()
-        connection.close()
-
-        return points["total_points"]     
-        
     
 def saving_employee_score(employee_alternative: EmployeeAlternative, score_exists: bool = False):
     
@@ -122,7 +102,7 @@ def saving_employee_score(employee_alternative: EmployeeAlternative, score_exist
     if is_answer == 1:
         
         if score_exists:
-            score += sum_score_quiz(game_id)
+            score += sum_score(game_id)
             query = f"""
             UPDATE Score set total_points = {score}, last_updated = '{last_updated}'
             WHERE game_id = {game_id} and employee_id = {employee_alternative.employee_id}
@@ -363,6 +343,7 @@ def verify_quiz_completed(quiz_id: int, employee_id: int):
         cursor.execute(query)
         
     except Exception as error:
+        
         connection.close()
         return False
     
@@ -373,7 +354,7 @@ def verify_quiz_completed(quiz_id: int, employee_id: int):
 
         if quiz_completed:
             return True
-        
+           
     return False
     
     
@@ -401,14 +382,47 @@ def verify_score_quiz_exists(game_id: int, employee_id: int):
         return 1 if bool(game_id) else 0
     
     
-def finished_quiz_game(quizzes_id: list, employee_id: int):
+def finished_quiz_game(employee_id: int, game_id: int):
 
-    for quiz_id in quizzes_id:
+    connection, cursor = connect_database()
+
+    query = f"""
+    SELECT COUNT(id) FROM Employee_Alternative ea 
+    WHERE employee_id = {employee_id}
+    ;
+    """
+    
+    try:
+        cursor.execute(query)
         
-        quiz_id_completed = verify_quiz_completed(quiz_id=quiz_id["id"], employee_id=employee_id)
+    except Exception as error:
+        connection.close()
+        return False
+    
+    else:
+        
+        count_answers = cursor.fetchone()
+        
+        query = f"""
+        SELECT COUNT(id) FROM Quiz q 
+        WHERE game_id  = {game_id}
+        ; 
 
-        if not quiz_id_completed:
+        """
+        
+        try:
+            cursor.execute(query)
+        
+        except Exception as error:
+            connection.close()
             return False
+        
+        else:
 
-    return True    
+            count_quiz = cursor.fetchone()
+    
+            if count_answers != count_quiz:
+                return False
+           
+    return True
     

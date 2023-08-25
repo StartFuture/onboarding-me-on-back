@@ -12,7 +12,7 @@ def select_quiz(company_id: int = None):
     if company_id:
         
         query = f"""
-        SELECT q.title, q.score  FROM Quiz q
+        SELECT q.id, q.title, q.score  FROM Quiz q
         left join Game g on g.id = q.game_id 
         left join GamifiedJourney gj on gj.id = g.gamified_journey_id 
         left join Company c on c.id = gj.company_id 
