@@ -4,7 +4,7 @@ from decimal import Decimal
 from app.dao.dao import connect_database
 from app.schemas.quiz import EmployeeAlternative
 from app.dao.dao_tools import sum_score
-
+from app.dao.dao_quiz import get_max_score
 
 def insert_employee_answer(employee_alternative: EmployeeAlternative):
 
@@ -164,13 +164,12 @@ def get_total_score(employee_id: int, game_id: int):
      
 def insert_medal_score(employee_id: int, game_id:int, score_id: int):
     
-    from app.dao.dao_quiz import get_max_score, employee_score
     
     connection, cursor = connect_database()  
     
     max_score = get_max_score(game_id=game_id)
         
-    employee_total_score = employee_score(employee_id=employee_id,game_id=game_id)
+    employee_total_score = get_total_score(employee_id=employee_id,game_id=game_id)
     
     bronze_medal =  max_score * Decimal(0.50)
     
@@ -218,8 +217,8 @@ def insert_medal_score(employee_id: int, game_id:int, score_id: int):
         return True  
     
 
-def get_employee_medals(employee_id: int, game_id: int):
-    
+def get_medal_score(employee_id: int, game_id: int):
+
     connection, cursor = connect_database()
     
     query = f"""
@@ -229,47 +228,60 @@ def get_employee_medals(employee_id: int, game_id: int):
     WHERE e.id = {employee_id} and s.game_id = {game_id}
     ;
     """
-    
+
     try:
         cursor.execute(query)
-
+        
     except Exception as error:
         connection.close()
         return None
+        
+    else:
+
+        medals_list = cursor.fetchall()
+        connection.close()
+        
+        return medals_list
+
+
+
+def get_employee_medals(employee_id: int, game_id: int):
+    
+    
+    connection, cursor = connect_database()
+
+    medals_list = get_medal_score(employee_id=employee_id, game_id=game_id)
+
+    medals_id = []
+        
+    for medals in medals_list:
+        medals_id.append(medals['medal_id']) 
+    
+    
+    placeholder = ','.join(['%s'] * len(medals_list))
+    
+    query = f"""
+    SELECT m.name, m.image FROM Medal m 
+    RIGHT JOIN Medal_Score ms on ms.medal_id = m.id 
+    RIGHT JOIN Score s ON s.id = ms.score_id 
+    RIGHT JOIN Employee e ON e.id = s.employee_id 
+    WHERE m.id IN ({placeholder}) and e.id = %s
+    ;
+    """
+    
+    try:
+        cursor.execute(query, medals_id + [employee_id])
+
+    except Exception as error:
+        connection.close()
+        return []
 
     else:
-        
-        medals_list = cursor.fetchall()
-        medals_id = []
-        
-        for medals in medals_list:
-            medals_id.append(medals['medal_id']) 
-        
-        
-        placeholder = ','.join(['%s'] * len(medals_list))
-        
-        query = f"""
-        SELECT m.name, m.image FROM Medal m 
-        RIGHT JOIN Medal_Score ms on ms.medal_id = m.id 
-        RIGHT JOIN Score s ON s.id = ms.score_id 
-        RIGHT JOIN Employee e ON e.id = s.employee_id 
-        WHERE m.id IN ({placeholder}) and e.id = %s
-        ;
-        """
-        
-        try:
-            cursor.execute(query, medals_id + [employee_id])
-
-        except Exception as error:
-            connection.close()
-            return []
-
-        else:
             
-             employee_medals_list = cursor.fetchall()
-             connection.close()
+        employee_medals_list = cursor.fetchall()
+        connection.close()
              
-             return employee_medals_list
+        return employee_medals_list
 
           
 def verify_employee_exists(employee_id: int, company_id: int):
@@ -381,9 +393,10 @@ def verify_score_quiz_exists(game_id: int, employee_id: int):
 
         return 1 if bool(game_id) else 0
     
-    
-def finished_quiz_game(employee_id: int, game_id: int):
 
+def get_count_employee_answers(employee_id: int):
+    
+    
     connection, cursor = connect_database()
 
     query = f"""
@@ -391,38 +404,48 @@ def finished_quiz_game(employee_id: int, game_id: int):
     WHERE employee_id = {employee_id}
     ;
     """
+
+    cursor.execute(query)
+
+    count_answers = cursor.fetchone()
+    connection.close()
+
+    return count_answers
     
+
+def get_count_quiz(game_id: int):
+    
+    
+    connection, cursor = connect_database()
+
+    query = f"""
+    SELECT COUNT(id) FROM Quiz q 
+    WHERE game_id  = {game_id}
+    ; 
+    """
+
+    cursor.execute(query)
+
+    count_quiz = cursor.fetchone()
+    connection.close()
+
+    return count_quiz
+    
+    
+def finished_quiz_game(employee_id: int, game_id: int):
+    
+
     try:
-        cursor.execute(query)
+        count_quiz = get_count_quiz(game_id=game_id)
+        count_answers = get_count_employee_answers(employee_id=employee_id)
         
     except Exception as error:
-        connection.close()
         return False
     
     else:
-        
-        count_answers = cursor.fetchone()
-        
-        query = f"""
-        SELECT COUNT(id) FROM Quiz q 
-        WHERE game_id  = {game_id}
-        ; 
 
-        """
-        
-        try:
-            cursor.execute(query)
-        
-        except Exception as error:
-            connection.close()
+        if count_answers != count_quiz:
             return False
-        
-        else:
-
-            count_quiz = cursor.fetchone()
-    
-            if count_answers != count_quiz:
-                return False
            
     return True
     

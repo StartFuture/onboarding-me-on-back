@@ -1,7 +1,6 @@
 from typing import List
 
 from app.dao.dao import connect_database
-from app.dao.dao_employee import get_total_score as employee_score
 from app.schemas.quiz import Quiz, Alternative
 
 
