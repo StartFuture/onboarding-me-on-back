@@ -1,7 +1,7 @@
 import email
 import smtplib
 
-from parameters import EMAIL, EMAIL_PASSWORD, congratulations_email, subject_congratulations_email
+from app.parameters import EMAIL, EMAIL_PASSWORD, congratulations_email, subject_congratulations_email
 
 
 def string_to_lower(name: str):
