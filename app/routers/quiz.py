@@ -3,6 +3,8 @@ from fastapi.responses import JSONResponse
 from typing import List
 
 from app.dao import dao_quiz as dao
+from app.dao import dao_employee
+from app.dao import dao_company
 from app.schemas.quiz import Quiz
 
 
@@ -134,4 +136,50 @@ def del_alternative(alternative_id: int, quiz_id: int):
         return JSONResponse(status_code=status.HTTP_200_OK, content={"msg": "The alternative has been deleted!"})
     else:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={"msg": "The alternative has not been deleted!"})
-    
+
+
+@router.get("/next/{quiz_id}")
+def return_next_quiz(quiz_id: int):
+
+    quiz_exists = dao.verify_if_quiz_id_exists(quiz_id=quiz_id)
+
+    if not quiz_exists:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "The quiz doesn't exists!"})
+
+    quiz_completed = dao_employee.verify_quiz_completed(quiz_id)
+
+    if not quiz_completed:
+        company_id = dao_company.get_company_id(quiz_id=quiz_id)
+
+        company_exists = dao_company.verify_if_company_exists(company_id)
+
+        if not company_exists:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "This company don't exists!"})
+        else:
+            quiz_alternative = dao.select_next_quiz(company_id, quiz_id)
+
+            if not quiz_alternative:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "The quiz could not be found!"})
+            else:
+                return JSONResponse(status_code=status.HTTP_200_OK, content=quiz_alternative)
+    else:
+        quiz_id += 1
+
+        quiz_exists = dao.verify_if_quiz_id_exists(quiz_id=quiz_id)
+
+        if not quiz_exists:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "There is no next quiz!"})
+
+        company_id = dao_company.get_company_id(quiz_id=quiz_id)
+
+        company_exists = dao_company.verify_if_company_exists(company_id)
+
+        if not company_exists:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "This company don't exists!"})
+        else:
+            quiz_alternative = dao.select_next_quiz(company_id, quiz_id)
+
+            if not quiz_alternative:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "The quiz could not be found!"})
+            else:
+                return JSONResponse(status_code=status.HTTP_200_OK, content=quiz_alternative)

@@ -33,6 +33,41 @@ def select_quiz(id: int):
          return quiz_list
 
 
+def select_next_quiz(company_id: int, quiz_id: int):
+
+    connection, cursor = connect_database()
+
+    query1 = f"""
+    SELECT q.link_video, q.title, q.question FROM Quiz q RIGHT JOIN Game g ON q.game_id = g.id
+    RIGHT JOIN GamifiedJourney gj ON g.gamified_journey_id = gj.id
+    RIGHT JOIN Company c ON gj.company_id = c.id
+    WHERE c.id = {company_id} AND q.id = {quiz_id};
+    """
+    query2 = f"""
+    SELECT a.alternative_text FROM Alternative a 
+    RIGHT JOIN Quiz q ON a.quiz_id = q.id
+    RIGHT JOIN Game g ON q.game_id = g.id
+    RIGHT JOIN GamifiedJourney gj ON g.gamified_journey_id = gj.id
+    RIGHT JOIN Company c ON gj.company_id = c.id
+    WHERE c.id = {company_id} AND q.id = {quiz_id};
+    """
+
+    try:
+        cursor.execute(query1)
+        quiz = cursor.fetchone()
+        cursor.execute(query2)
+        alternatives = cursor.fetchall()
+    except Exception as error:
+        connection.close()
+        return None
+    else:
+        quiz["alternatives"] = alternatives
+
+        connection.close()
+
+        return quiz
+
+
 def insert_quiz(quiz: Quiz):
 
     connection, cursor = connect_database() 

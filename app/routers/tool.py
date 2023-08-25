@@ -1,4 +1,5 @@
 from app.dao import dao_tools as dao
+from app.dao import dao_company
 from app.schemas.category_tool import CategoryTool
 from app.schemas.tool import Tool, EmployeeTool
 
@@ -18,7 +19,7 @@ router = APIRouter(
 @router.get("/{company_id}")
 def get_tools(company_id: int):
     
-    company_exists = dao.verify_if_company_exists(company_id)
+    company_exists = dao_company.verify_if_company_exists(company_id)
     
     if not company_exists:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "This company don't exists!"})
@@ -189,7 +190,7 @@ def complete_tool(employee_tool: EmployeeTool):
 @router.get("/game/")
 def game_tools_completed(gamefied_journey_id: int, employee_id: int):
 
-    tool_count = dao.get_id_tools(gamefied_journey_id)
+    tool_count = dao.get_count_tools(gamefied_journey_id)
 
     if not tool_count:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "The tools were not found! "})
