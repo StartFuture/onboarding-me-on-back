@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field
 from typing import Optional
 
-feedback_type_pattern = r"gamefiedjorney|welcomekit"
+feedback_type_pattern = r"gamefiedjourney|welcomekit"
 
 class FeedBackEmployee(BaseModel):
     employee_id: Optional[int] = None
