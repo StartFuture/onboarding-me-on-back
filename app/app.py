@@ -7,7 +7,7 @@ from app.routers.quiz import router as router_quiz
 from app.routers.employee import router as router_employee
 from app.routers.gamified_journey import router as router_gamified_journey
 from app.routers.medal_score import router as router_medal
-
+from app.routers.welcome_kit import router as router_welcome_kit
 
 
 
@@ -39,3 +39,4 @@ app.include_router(router=router_quiz)
 app.include_router(router=router_employee)
 app.include_router(router=router_gamified_journey)
 app.include_router(router=router_medal)
+app.include_router(router=router_welcome_kit)

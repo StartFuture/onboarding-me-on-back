@@ -1,9 +1,7 @@
 from pydantic import BaseModel, Field
 from typing import Optional
 
-link_video_pattern = r"(https\:\/\/)?www\.youtube\.com\/watch\?v\=[A-z0-9]+"
-quiz_type_pattern = r"culture|principle"
-
+from app import parameters
 
 class EmployeeAlternative(BaseModel):
     employee_id: int
@@ -18,10 +16,10 @@ class Alternative(BaseModel):
 
 class Quiz(BaseModel):
     quiz_id: Optional[int] = None
-    link_video: str = Field(pattern=link_video_pattern)
+    link_video: str = Field(pattern=parameters.dict_regex["link video pattern"])
     score: int
     title: str
     question: str
-    quiz_type: str = Field(pattern=quiz_type_pattern)
+    quiz_type: str = Field(pattern=parameters.dict_regex["quiz type pattern"])
     game_id: int
     alternatives: list[Alternative]
