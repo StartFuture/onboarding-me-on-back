@@ -19,7 +19,7 @@ router = APIRouter(
 @router.get("/get-video/{company_id}")
 def get_video_company(company_id: int):
     
-    c = select_company(company_id)
+    company = select_company(company_id)
 
     
     if company == None:
@@ -38,7 +38,7 @@ def create_video_company(gamifiedJourney: GamifiedJourney):
     
     company = select_company(gamifiedJourney.company_id)
     
-    if company == None:
+    if company:
         video = insert_video_company(company_id=gamifiedJourney.company_id, link=gamifiedJourney.welcome_video_link)
         return JSONResponse(status_code=status.HTTP_200_OK, content=video)
     else:
@@ -48,7 +48,7 @@ def create_video_company(gamifiedJourney: GamifiedJourney):
 @router.put("/update")
 def update_video_company(company_id: int, new_link: str):
     
-    video = modify_video_company(company_id=id, new_link=new_link)
+    video = modify_video_company(company_id=company_id, new_link=new_link)
 
     if video:
         return JSONResponse(status_code=status.HTTP_200_OK, content={"msg": "The video has been deleted!"})
