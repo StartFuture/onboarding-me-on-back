@@ -1,5 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
+
 from app.routers.company import router as router_company
 from app.routers.tool import router as router_tool
 from app.routers.quiz import router as router_quiz
