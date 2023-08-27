@@ -19,7 +19,8 @@ router = APIRouter(
 @router.get("/get-video/{company_id}")
 def get_video_company(company_id: int):
     
-    company = select_company(company_id)
+    c = select_company(company_id)
+
     
     if company == None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "This company doesn't exist!"})

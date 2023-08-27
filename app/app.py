@@ -5,6 +5,8 @@ from app.routers.tool import router as router_tool
 from app.routers.quiz import router as router_quiz
 from app.routers.employee import router as router_employee
 from app.routers.gamified_journey import router as router_gamified_journey
+from app.routers.medal_score import router as router_medal
+
 
 
 
@@ -15,7 +17,7 @@ origins = [
     "http://localhost.tiangolo.com",
     "https://localhost.tiangolo.com",
     "http://localhost",
-    "http://localhost:3306",
+    "http://localhost:3000",
     
 ]
 
@@ -34,4 +36,8 @@ app.include_router(router=router_tool)
 app.include_router(router=router_quiz)
 app.include_router(router=router_employee)
 app.include_router(router=router_gamified_journey)
+<<<<<<< HEAD
 
+=======
+app.include_router(router=router_medal)
+>>>>>>> ae716783a91e01baf526f6a3e8e466583cdc18a0
