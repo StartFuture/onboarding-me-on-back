@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, constr
+from pydantic import BaseModel
 
 
 class Medal_Score_Employee(BaseModel):
