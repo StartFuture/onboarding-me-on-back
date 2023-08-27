@@ -36,8 +36,4 @@ app.include_router(router=router_tool)
 app.include_router(router=router_quiz)
 app.include_router(router=router_employee)
 app.include_router(router=router_gamified_journey)
-<<<<<<< HEAD
-
-=======
 app.include_router(router=router_medal)
->>>>>>> ae716783a91e01baf526f6a3e8e466583cdc18a0
