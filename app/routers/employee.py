@@ -18,11 +18,14 @@ router = APIRouter(
 
 @router.get("/feedback")
 def get_feedback_employee(company_id : int):
+
     feedback_exists = verify_if_company_exists(company_id)
+
     if not feedback_exists:
         raise HTTPException (status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "This company don't exists"})
 
     feedback_list = dao.select_feedback_company(company_id = company_id )
+
     if feedback_list:
         return JSONResponse (status_code=status.HTTP_200_OK, content=feedback_list)
     else:
@@ -64,7 +67,14 @@ def register_score(employee_id: int):
 
 @router.post("/register/feedback")
 def create_feedback_employee(feedback_employee: FeedBackEmployee):
+
+    employee_exists = dao.verify_employee_exists(feedback_employee.employee_id)
+    
+    if not employee_exists:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"msg": "This employee not exists!"})
+
     is_register = dao.insert_feedback(feedback_employee)
+
     if is_register:
         return JSONResponse(status_code=status.HTTP_200_OK, content={"msg": "Successfully registered!"})
     else:
