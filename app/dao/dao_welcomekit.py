@@ -254,7 +254,7 @@ def delete_tracking_welcome_kit(welcome_kit_id: int):
         connection.close()
     
         return True
-    
+ 
     
 def delete_welcome_kit(welcome_kit_id: int):
     
@@ -296,7 +296,81 @@ def delete_welcome_kit(welcome_kit_id: int):
         connection.close()
 
         return True   
-   
+    
+    
+async def update_welcome_kit(welcome_kit_id: int, welcome_kit_name: str, welcome_kit_image: UploadFile):
+    
+    connection, cursor = connect_database()
+    
+    image_data = await welcome_kit_image.read()
+    
+    query = """
+    UPDATE WelcomeKit
+    SET 
+    name = %s,
+    image = %s
+    WHERE id = %s
+    ;
+    """
+
+    params = (welcome_kit_name, image_data, welcome_kit_id)
+    
+    try:
+        cursor.execute(query, params)
+        
+    except Exception as error:
+        connection.close()
+        return False
+    
+    else:
+        
+        connection.commit()
+        
+        list_items_id = select_items_by_welcome_kit_id(welcome_kit_id)
+    
+        deleted_associate_items = delete_associate_welcome_kit_items(ids_list=list_items_id)
+        
+        if not deleted_associate_items:
+            return False
+        
+        deleted_all_items = delete_all_welcome_kit_items(ids_list=list_items_id)
+        
+        if not deleted_all_items:
+            return False
+        
+        return True
+
+
+async def update_welcome_kit_item(kit_id: int, kit_item_name: str, welcome_kit_item_image: UploadFile):
+    
+    connection, cursor = connect_database()
+    
+    image_data = await welcome_kit_item_image.read()
+    
+    query = """
+    UPDATE onboarding_me.WelcomeKitItem
+    SET 
+    name= %s, 
+    image= %s
+    WHERE id= %s
+    ;
+    """
+    
+    params = (kit_item_name, image_data, kit_id)
+
+    try:
+        cursor.execute(query, params)
+        
+    except Exception as error:
+        connection.close()
+        return False
+    
+    else:
+        connection.commit()
+        connection.close()
+        
+        return True
+
     
 def verify_if_welcome_kit_have_this_item(welcome_kit_id: int, item_id: id):
     
@@ -324,9 +398,36 @@ def verify_if_welcome_kit_have_this_item(welcome_kit_id: int, item_id: id):
             return True
         
     return False
+
+
+def verify_if_welcome_kit_item_exists(kit_item_id: int):
     
+    connection, cursor = connect_database()
     
+    query = f"""
+    SELECT id
+    FROM onboarding_me.WelcomeKitItem
+    WHERE id = {kit_item_id}
+    ;
+    """
+
+    try:
+        cursor.execute(query)
+        
+    except Exception as error:
+        connection.close()
+        return None
     
+    else:
+        
+        welcome_kit_item_exists = cursor.fetchone()
+        
+        if welcome_kit_item_exists:
+            return True
+        
+    return False
+    
+      
 def verify_if_welcome_kit_exists(employee_id: int = None, welcome_kit_id: int = None):
     
     connection, cursor = connect_database()

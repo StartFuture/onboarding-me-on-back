@@ -1,3 +1,4 @@
+
 from app.dao import dao_welcomekit as dao
 from app.utils import verify_is_allowed_file
 
@@ -126,3 +127,35 @@ def delete_welcomekit_item(welcome_kit_id: int, item_id: int):
         return JSONResponse(status_code=status.HTTP_200_OK, content={"msg": "The welcome kit item has been deleted!"})
     else:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"msg": "ERROR in WelcomeKit"})      
+
+
+@router.put("/update")
+async def modify_welcome_kit(welcome_kit_id: int, welcome_kit_name: str, image: UploadFile = File(...)):
+    
+    welcome_kit_exists = dao.verify_if_welcome_kit_exists(welcome_kit_id=welcome_kit_id)
+    
+    if not welcome_kit_exists:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"msg": "This welcome kit does not exists!!"})
+    
+    welcome_kit_modified = await dao.update_welcome_kit(welcome_kit_id, welcome_kit_name, image)
+    
+    if welcome_kit_modified:
+        return JSONResponse(status_code=status.HTTP_200_OK, content={"msg": "Successfully updated!"})
+    else:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={"msg": "The welcome kit has not been updated"})
+        
+
+@router.put("/update/welcome-kit-item")
+async def modify_welcome_kit_item(kit_item_id: int, kit_item_name: str, image: UploadFile = File(...)):
+
+    welcome_kit_item_exists = dao.verify_if_welcome_kit_item_exists(kit_item_id)
+    
+    if not welcome_kit_item_exists:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"msg": "This welcome kit item does not exists!!"})
+
+    welcome_kit_item_modified = await dao.update_welcome_kit_item(kit_item_id, kit_item_name, image)
+    
+    if welcome_kit_item_modified:
+        return JSONResponse(status_code=status.HTTP_200_OK, content={"msg": "Successfully updated!"})
+    else:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={"msg": "The welcome kit item has not been updated"})
