@@ -166,11 +166,16 @@ def select_items_by_welcome_kit_id(welcome_kit_id: int):
         return list_items_id
    
      
-def delete_associate_welcome_kit_items(ids_list: list):
+def delete_associate_welcome_kit_items(ids_list: list = None, id_list : list = None):
     
     connection, cursor = connect_database()
      
-    ids = [item['id'] for item in ids_list]
+    if ids_list:
+        ids = [item['id'] for item in ids_list]
+        
+    if id_list:
+        ids = id_list
+ 
  
     placeholder = ','.join(['%s'] * len(ids))
     
@@ -194,12 +199,17 @@ def delete_associate_welcome_kit_items(ids_list: list):
         return True
     
     
-def delete_all_welcome_kit_items(ids_list: list):
+def delete_all_welcome_kit_items(ids_list: list = None, id_list : list = None):
     
     connection, cursor = connect_database()
      
-    ids = [item['id'] for item in ids_list]
+    if ids_list:
+        ids = [item['id'] for item in ids_list]
+        
+    if id_list:
+        ids = id_list
  
+
     placeholder = ','.join(['%s'] * len(ids))
     
     query = f"""
@@ -252,12 +262,12 @@ def delete_welcome_kit(welcome_kit_id: int):
     
     list_items_id = select_items_by_welcome_kit_id(welcome_kit_id)
     
-    deleted_associate_items = delete_associate_welcome_kit_items(list_items_id)
+    deleted_associate_items = delete_associate_welcome_kit_items(ids_list=list_items_id)
     
     if not deleted_associate_items:
         return False
     
-    deleted_all_items = delete_all_welcome_kit_items(list_items_id)
+    deleted_all_items = delete_all_welcome_kit_items(ids_list=list_items_id)
     
     if not deleted_all_items:
         return False
@@ -286,6 +296,35 @@ def delete_welcome_kit(welcome_kit_id: int):
         connection.close()
 
         return True   
+   
+    
+def verify_if_welcome_kit_have_this_item(welcome_kit_id: int, item_id: id):
+    
+    connection, cursor = connect_database()
+    
+    query = f"""
+    SELECT id, welcome_kit_id, item_id
+    FROM onboarding_me.WelcomeKit_WelcomeKitItem wkwki
+    WHERE wkwki.welcome_kit_id = {welcome_kit_id} AND wkwki.item_id = {item_id}
+    ;
+    """
+
+    try:
+        cursor.execute(query)
+        
+    except Exception as error:
+        connection.close()
+        return None
+    
+    else:
+        
+        welcome_kit_have_this_item = cursor.fetchone()
+        
+        if welcome_kit_have_this_item:
+            return True
+        
+    return False
+    
     
     
 def verify_if_welcome_kit_exists(employee_id: int = None, welcome_kit_id: int = None):

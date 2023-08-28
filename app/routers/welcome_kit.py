@@ -62,7 +62,7 @@ def get_welcome_kit_item(welcome_kit_id: int, item_id: int):
     
     
 @router.post("/register/welcomekit-item")
-async def register_welcome_kit(welcome_kit_id: int, item_name: str, item_image: UploadFile = File(...)):
+async def register_welcome_kit_item(welcome_kit_id: int, item_name: str, item_image: UploadFile = File(...)):
     
     is_allowed_file = verify_is_allowed_file(item_image.filename)
     
@@ -100,4 +100,29 @@ def delete_welcomekit(welcome_kit_id: int):
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"msg": "ERROR in WelcomeKit"})        
     
     
+@router.delete("/delete/item")
+def delete_welcomekit_item(welcome_kit_id: int, item_id: int):
     
+    welcome_kit_exists = dao.verify_if_welcome_kit_exists(welcome_kit_id=welcome_kit_id)
+    
+    if not welcome_kit_exists:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"msg": "This welcome kit does not exists!!"})
+    
+    item_exists = dao.verify_if_welcome_kit_have_this_item(welcome_kit_id, item_id)
+    
+    if not item_exists:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"msg": "This welcome kit dont have this item!"})
+    
+    list_item_id = [item_id]
+    
+    deleted_associate = dao.delete_associate_welcome_kit_items(id_list=list_item_id)
+    
+    if not deleted_associate:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={"msg": "The welcome kit item has not been deleted"})
+        
+    deleted_item = dao.delete_all_welcome_kit_items(id_list=list_item_id)
+    
+    if deleted_item:
+        return JSONResponse(status_code=status.HTTP_200_OK, content={"msg": "The welcome kit item has been deleted!"})
+    else:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"msg": "ERROR in WelcomeKit"})      
