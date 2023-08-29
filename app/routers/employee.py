@@ -47,7 +47,6 @@ def get_final_score(employee_id: int):
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "Employee score not encountered!"})   
     
-    
 
 @router.post("/register/score") 
 def register_score(employee_id: int):
