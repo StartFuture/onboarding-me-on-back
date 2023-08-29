@@ -106,3 +106,26 @@ def select_medal_by_game(game_id: int):
         connection.close()
 
     return medal_id
+
+
+def update_medal(medal_id: int, new_medal: str):
+    
+    connection, cursor = connect_database()
+    
+    query = f"""
+    SELECT name, image, medal_id from Medal_Score
+    set image = {new_medal}
+	WHERE medal_id = '{medal_id}';
+    """
+
+    try:
+        cursor.execute(query)
+    except:
+        medal = None
+    else:
+        medal = cursor.fetchone()
+    finally:
+        connection.commit()
+        connection.close()
+
+    return medal

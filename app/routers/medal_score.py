@@ -43,3 +43,13 @@ def create_medal(medal_score_employee: Medal_Score_Employee):
         return JSONResponse(status_code=status.HTTP_200_OK, content=success)
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "Unable to create the medal for the user!"})
+    
+@router.put("/update")
+def update_medal(medal_id: int, new_medal: str):
+    
+    change_medal = update_medal( medal_id: int, new_medal: str)
+
+    if change_medal:
+        return JSONResponse(status_code=status.HTTP_200_OK, content={"msg": "The medal has been deleted!"})
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "This employee doesn't have a medal!"})
