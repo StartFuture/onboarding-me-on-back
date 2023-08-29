@@ -16,10 +16,10 @@ router = APIRouter(
 
 
 
-@router.get("/{company_id}")
+@router.get("/")
 def get_quiz(company_id: int):
     
-    quiz = dao.select_quiz(company_id)
+    quiz = dao.select_quiz(company_id=company_id)
     
     if quiz:
         return JSONResponse(status_code=status.HTTP_200_OK, content=quiz)
@@ -47,7 +47,7 @@ def register_quiz(quiz: Quiz):
     
     
 @router.put("/update")
-def modify_quiz(quiz: Quiz):
+def modify_quiz(quiz: Quiz, company_id: int):
 
     list_alternative_id = []
     
@@ -69,7 +69,7 @@ def modify_quiz(quiz: Quiz):
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={"msg": "This game_id not exists!"})
     
     
-    quiz_id_exists = dao.verify_if_quiz_id_exists(quiz)
+    quiz_id_exists = dao.verify_if_quiz_id_exists(quiz, company_id)
     
     if not quiz_id_exists:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={"msg": "This quiz_id not exists!"})

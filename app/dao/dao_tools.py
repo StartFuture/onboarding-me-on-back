@@ -418,7 +418,7 @@ def get_game_id_tool(employee_tool: EmployeeTool):
 
         return game_id["game_id"]
     
-def sum_score_tools(game_id: int):
+def sum_score(game_id: int):
 
     connection, cursor = connect_database()
 
@@ -426,15 +426,18 @@ def sum_score_tools(game_id: int):
 
     try:
         cursor.execute(query)
+        
     except Exception as error:
         connection.close
         return None
+    
     else:
+        
         points = cursor.fetchone()
-
         connection.close()
 
         return points["total_points"]
+    
 
 def saving_tool_score(employee_tool: EmployeeTool, score_exists: bool = False):
 
@@ -448,7 +451,7 @@ def saving_tool_score(employee_tool: EmployeeTool, score_exists: bool = False):
 
 
     if score_exists:
-        score += sum_score_tools(game_id)
+        score += sum_score(game_id)
         query = f"""
         UPDATE Score set total_points = {score}, last_updated = '{last_updated}'
         WHERE game_id = {game_id};
@@ -491,3 +494,33 @@ def verify_score_tool_exists(game_id: int):
         connection.close()
 
         return 1 if bool(game_id) else 0
+
+
+def get_id_tools():
+
+    connection, cursor = connect_database()
+
+    query = f'SELECT id FROM Tool;'
+
+    try:
+        cursor.execute(query)
+    except Exception as error:
+        connection.close()
+        return None
+    else:
+        tools_id = cursor.fetchall()
+
+        connection.close()
+        
+        return tools_id
+
+
+def ended_game_tools(tools_id: list):
+
+    for tool_id in tools_id:
+        tool_id_completed = verify_tool_completed(tool_id=tool_id["id"])
+
+        if not tool_id_completed:
+            return False
+        
+    return True

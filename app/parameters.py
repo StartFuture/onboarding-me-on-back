@@ -18,7 +18,10 @@ LINK_DOWNLOAD_PATTERN = r"https\:\/\/[www\.]?[A-z\.0-9]+[\.A-z]+\/.*"
 
 dict_regex = {'name pattern' : r"^[A-Za-zÀ-ÿ\s\.\-0-9]+$",
               'link download pattern' : r"https\:\/\/[www\.]?[A-z\.0-9]+[\.A-z]+\/.*",
-              'cnpj pattern': r"^^\d{2}\.?\d{3}\.?\d{3}\/?\d{4}\-?\d{2}$"}
+              'cnpj pattern': r"^^\d{2}\.?\d{3}\.?\d{3}\/?\d{4}\-?\d{2}$",
+              'tracking code pattern' : r"^[A-Z]{2}\d{9}[A-Z]{2}$",
+              'status kit pattern' : r"to_be_send|sended|delivered"}
+            
 
 
 subject_congratulations_email = f'Company quiz'
