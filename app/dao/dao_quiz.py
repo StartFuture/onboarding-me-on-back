@@ -91,8 +91,8 @@ def insert_alternatives(alternatives: list[Alternative], quiz_id: int):
         
         else: 
             connection.commit()
-            connection.close()
-
+            
+    connection.close()
     return True 
 
 
