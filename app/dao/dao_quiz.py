@@ -4,20 +4,22 @@ from app.dao.dao import connect_database
 from app.schemas.quiz import Quiz, Alternative
 
 
-def select_quiz(id: int):
+def select_quiz(company_id: int = None):
 
     connection, cursor = connect_database()
 
-    query = f"""
-    SELECT q.title, q.score  FROM Quiz q
-    left join Game g on g.id = q.game_id 
-    left join GamifiedJourney gj on gj.id = g.gamified_journey_id 
-    left join Company c on c.id = gj.company_id 
-    WHERE
-    c.id = {id}
-    ;
-    """ 
-    
+    if company_id:
+        
+        query = f"""
+        SELECT q.id, q.title, q.score  FROM Quiz q
+        left join Game g on g.id = q.game_id 
+        left join GamifiedJourney gj on gj.id = g.gamified_journey_id 
+        left join Company c on c.id = gj.company_id 
+        WHERE
+        c.id = {company_id}
+        ;
+        """ 
+
     try:
         cursor.execute(query)
 
@@ -316,6 +318,33 @@ def update_alternative(alternatives: list[Alternative], quiz_id: int):
     return True
 
 
+def get_max_score(game_id: int):
+    
+    connection, cursor = connect_database()
+        
+    query = f"""
+    SELECT SUM(score) FROM Quiz q 
+    WHERE game_id = {game_id}
+    ;
+    """ 
+
+    try:
+        cursor.execute(query)
+
+    except Exception as error:
+        connection.close()
+        return False
+
+    else:
+
+         max_score = cursor.fetchone()
+         connection.close()
+         
+         max_score_value = max_score['SUM(score)']
+         
+         return max_score_value
+
+
 def verify_if_game_id_exists(quiz: Quiz = None, game_id: int = None):
     
     connection, cursor = connect_database()
@@ -334,7 +363,7 @@ def verify_if_game_id_exists(quiz: Quiz = None, game_id: int = None):
         query = f"""
         SELECT g.id FROM Quiz q
         left join Game g on g.id = q.game_id 
-        WHERE g.id = {game_id}
+        WHERE g.id = {game_id}  
         ;
         """
     
@@ -352,7 +381,7 @@ def verify_if_game_id_exists(quiz: Quiz = None, game_id: int = None):
         return game_id_exists
     
      
-def verify_if_quiz_id_exists(quiz: Quiz = None, quiz_id: int = None):
+def verify_if_quiz_id_exists(company_id: int, quiz: Quiz = None, quiz_id: int = None):
     
     connection, cursor = connect_database()
     
@@ -363,11 +392,15 @@ def verify_if_quiz_id_exists(quiz: Quiz = None, quiz_id: int = None):
         WHERE id = {quiz.quiz_id};
         """
     
-    if quiz_id:
+    if quiz_id and company_id:
 
         query = f"""
-        SELECT id FROM Quiz
-        WHERE id = {quiz_id};
+        SELECT q.id FROM Quiz q  
+        RIGHT JOIN Game g ON g.id = q.game_id 
+        RIGHT JOIN GamifiedJourney gj  ON gj.id = g.gamified_journey_id 
+        RIGHT JOIN Company c ON c.id = gj.company_id 
+        WHERE q.id = {quiz_id} and c.id = {company_id}
+        ;
         """
     
     
@@ -394,17 +427,20 @@ def verify_if_alternative_id_exists(alternative_list: list, quiz_id: int):
     query = f"""
     SELECT id
     FROM Alternative 
-    WHERE id IN ({placeholder}) AND quiz_id = %s;
+    WHERE id IN ({placeholder}) AND quiz_id = %s
+    ;
     """
 
     try:
         cursor.execute(query, alternative_list + [quiz_id])
-        alternative_id_exists = cursor.fetchall()
 
     except Exception as error:
         connection.close()
         return []
 
     else:
+        
+        alternative_id_exists = cursor.fetchall()
         connection.close()
+        
         return alternative_id_exists

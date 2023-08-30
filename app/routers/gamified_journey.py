@@ -8,7 +8,7 @@ from fastapi import APIRouter
 
 
 router = APIRouter(
-    prefix="/gamified_journey",
+    prefix="/game_journey",
     tags=[
         "gamified_journey"
     ]
@@ -16,24 +16,28 @@ router = APIRouter(
 )
 
 
-@router.get("/get-video-company/{company_id}")
+@router.get("/get-video/{company_id}")
 def get_video_company(company_id: int):
     
     c = select_company(company_id)
     
-    if c == None:
+    if company == None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "This company doesn't exist!"})
 
     else:
         video = select_video_company(company_id=company_id)
+        
+        if not video:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "This company video doesn't exist!"})
+        
         return JSONResponse(status_code=status.HTTP_200_OK, content=video)
 
 @router.post("/create")
 def create_video_company(gamifiedJourney: GamifiedJourney):
     
-    c = select_company(gamifiedJourney.company_id)
+    company = select_company(gamifiedJourney.company_id)
     
-    if c == None:
+    if company == None:
         video = insert_video_company(company_id=gamifiedJourney.company_id, link=gamifiedJourney.welcome_video_link)
         return JSONResponse(status_code=status.HTTP_200_OK, content=video)
     else:

@@ -1,3 +1,5 @@
+import logging
+
 from app.dao.dao import connect_database
 
 def select_company(company_id: int):
@@ -11,8 +13,9 @@ def select_company(company_id: int):
 
     try:
         cursor.execute(query)
-    except:
+    except Exception as error:
         company = None
+        logging.error(f"error at select company: {error}")
     else:
         company = cursor.fetchone()
     finally:

@@ -204,3 +204,4 @@ def game_tools_completed(gamefied_journey_id: int, employee_id: int):
        return JSONResponse(status_code=status.HTTP_200_OK, content={"msg": "The tool game has been successfully completed!"})
     else:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"msg": "The tool game has not been completed!"})
+        
