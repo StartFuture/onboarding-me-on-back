@@ -51,7 +51,7 @@ def register_score(employee_alternative: EmployeeAlternative, quiz_id: int, comp
     if not quiz_exists:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"msg": "This quiz not exists!"})
     
-    alternative_exists = dao.verify_alternative_exists(employee_alternative.alternative_id, company_id=company_id)
+    alternative_exists = dao.verify_alternative_exists(alternative_id=employee_alternative.alternative_id, quiz_id=quiz_id)
     
     if not alternative_exists:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"msg": "This alternative not exists!"})

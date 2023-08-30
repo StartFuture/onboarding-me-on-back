@@ -69,7 +69,7 @@ def modify_quiz(quiz: Quiz, company_id: int):
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={"msg": "This game_id not exists!"})
     
     
-    quiz_id_exists = dao.verify_if_quiz_id_exists(quiz, company_id)
+    quiz_id_exists = dao.verify_if_quiz_id_exists(quiz=quiz, company_id=company_id)
     
     if not quiz_id_exists:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={"msg": "This quiz_id not exists!"})
@@ -98,17 +98,21 @@ def modify_quiz(quiz: Quiz, company_id: int):
 
 
 @router.delete("/delete")
-def delete_quiz(list_alternative_id: List[int], quiz_id: int, game_id: int):
-     
+def delete_quiz(quiz_id: int, game_id: int, company_id: int):
     
-    alternative_id_exists = dao.verify_if_alternative_id_exists(list_alternative_id, quiz_id)
+    game_id_exists = dao.verify_if_game_id_exists(game_id=game_id)
     
-    if len(alternative_id_exists) != len(list_alternative_id):
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"msg": "This alternative_id not exists!"})
+    if not game_id_exists:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={"msg": "This game_id not exists or dont have this quiz!"})
     
     
-    quiz_deleted = dao.delete_quiz_alternative(alternatives=list_alternative_id, quiz_id=quiz_id, game_id=game_id)
+    quiz_id_exists = dao.verify_if_quiz_id_exists(quiz_id=quiz_id, company_id=company_id)
     
+    if not quiz_id_exists:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={"msg": "This quiz_id not exists!"})
+    
+    
+    quiz_deleted = dao.delete_quiz_alternative(quiz_id=quiz_id, game_id=game_id)  
     
     if quiz_deleted:
         return JSONResponse(status_code=status.HTTP_200_OK, content={"msg": "The quiz has been deleted!"})
