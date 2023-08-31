@@ -18,7 +18,7 @@ router = APIRouter(
 
 @router.get("/get-video/{company_id}")
 def get_video_company(company_id: int):
-
+    
     company = select_company(company_id)
     
     if company == None:
