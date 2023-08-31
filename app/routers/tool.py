@@ -1,4 +1,5 @@
 from app.dao import dao_tools as dao
+from app.dao import dao_company
 from app.schemas.category_tool import CategoryTool
 from app.schemas.tool import Tool, EmployeeTool
 
@@ -18,7 +19,7 @@ router = APIRouter(
 @router.get("/{company_id}")
 def get_tools(company_id: int):
     
-    company_exists = dao.verify_if_company_exists(company_id)
+    company_exists = dao_company.verify_if_company_exists(company_id)
     
     if not company_exists:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "This company don't exists!"})
@@ -186,17 +187,21 @@ def complete_tool(employee_tool: EmployeeTool):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "The tool does not exist!"})
 
 
-@router.get("/game/completed")
-def game_tools_completed():
+@router.get("/game/")
+def game_tools_completed(gamefied_journey_id: int, employee_id: int):
 
-    tools_id = dao.get_id_tools()
+    tool_count = dao.get_count_tools(gamefied_journey_id)
 
-    if tools_id == None:
+    if not tool_count:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "The tools were not found! "})
-    else:
-        game_tools_completed = dao.ended_game_tools(tools_id)
+    
+    game_tools_completed = dao.ended_game_tools(employee_id)
 
-        if game_tools_completed:
-            return JSONResponse(status_code=status.HTTP_200_OK, content={"msg": "The tool game has been successfully completed!"})
-        else:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "The tool game has not been completed!"})
+    if not game_tools_completed:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "The completed tools were not found!"})
+    
+    if tool_count == game_tools_completed:
+       return JSONResponse(status_code=status.HTTP_200_OK, content={"msg": "The tool game has been successfully completed!"})
+    else:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"msg": "The tool game has not been completed!"})
+        

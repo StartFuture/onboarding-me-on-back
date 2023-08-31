@@ -92,6 +92,7 @@ def delete_tool(tool_id : int, game_id: int):
         
     except Exception as error:
         connection.close()
+        print(error)
         return False
 
     else:
@@ -304,35 +305,6 @@ def verify_if_category_exists(category_name: str = None, category_id: int = None
         
     return False
 
-    
-def verify_if_company_exists(company_id: int):
-    
-    connection, cursor = connect_database()
-    
-    query =f"""
-    SELECT id
-    FROM Company
-    WHERE id = {company_id}
-    ;
-    """
-    
-    try:
-        cursor.execute(query)
-        
-    except Exception as error:
-        connection.close()
-        return False    
-    
-    else:    
-        
-        company_exists = cursor.fetchone()
-        connection.close()
-        
-        if company_exists:
-            return True
-        
-    return False
-
 
 def linking_tool(employee_tool: EmployeeTool):
 
@@ -496,11 +468,16 @@ def verify_score_tool_exists(game_id: int):
         return 1 if bool(game_id) else 0
 
 
-def get_id_tools():
+def get_count_tools(gamified_journey: int):
 
     connection, cursor = connect_database()
 
-    query = f'SELECT id FROM Tool;'
+    query = f"""
+    SELECT COUNT(t.id) FROM GamifiedJourney gj  
+    LEFT JOIN Game g ON g.gamified_journey_id  = gj.id
+    LEFT JOIN Tool t ON t.game_id = g.id
+    WHERE gj.id = {gamified_journey};
+    """
 
     try:
         cursor.execute(query)
@@ -508,19 +485,30 @@ def get_id_tools():
         connection.close()
         return None
     else:
-        tools_id = cursor.fetchall()
+        tools_id = cursor.fetchone()
 
         connection.close()
         
-        return tools_id
+        return tools_id["COUNT(t.id)"]
 
 
-def ended_game_tools(tools_id: list):
+def ended_game_tools(employee_id: int):
 
-    for tool_id in tools_id:
-        tool_id_completed = verify_tool_completed(tool_id=tool_id["id"])
+    connection, cursor = connect_database()
 
-        if not tool_id_completed:
-            return False
-        
-    return True
+    query = f"""
+    SELECT COUNT(et.id) FROM Employee e LEFT JOIN 
+    Employee_Tool et ON et.employee_id = {employee_id};
+    """
+
+    try:
+        cursor.execute(query)
+    except Exception as error:
+        connection.close()
+        return None
+    else:
+        tools_completed = cursor.fetchone()
+
+        connection.close()
+
+        return tools_completed["COUNT(et.id)"]

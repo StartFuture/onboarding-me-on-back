@@ -35,6 +35,92 @@ def select_quiz(company_id: int = None):
          return quiz_list
 
 
+def select_quiz_id_completed(employee_id: int):
+
+    connection, cursor = connect_database()
+
+    query = f"""
+    SELECT q.id FROM Employee e LEFT JOIN Employee_Alternative ea ON ea.employee_id = e.id
+    LEFT JOIN Alternative a ON ea.alternative_id = a.id
+    LEFT JOIN Quiz q ON a.quiz_id = q.id
+    WHERE e.id = {employee_id}
+    ORDER BY q.id;
+    """
+
+    try:
+        cursor.execute(query)
+    except Exception as error:
+        connection.close()
+        return None
+    else:
+        quizzes_id = cursor.fetchall()
+
+        list_id_quizzes = tuple([list(quiz_id.values())[0] for quiz_id in quizzes_id])
+
+        connection.close()
+
+        return list_id_quizzes
+    
+
+def select_next_quiz_id(employee_id: int, quizzes_completed: tuple):
+
+    connection, cursor = connect_database()
+
+    query = f"""
+    SELECT q.id FROM Employee e LEFT JOIN GamifiedJourney gj ON gj.company_id = e.company_id
+    LEFT JOIN Game g ON g.gamified_journey_id = gj.id
+    LEFT JOIN Quiz q ON q.game_id = g.id
+    WHERE e.id = {employee_id} AND q.id NOT IN {quizzes_completed}
+    ORDER BY q.id;
+    """
+    
+
+    try:
+        cursor.execute(query)
+    except Exception as error:
+        connection.close()
+        return None
+    else:
+        quizzes_id = cursor.fetchone()
+
+        connection.close()
+
+        return quizzes_id["id"]
+
+
+def select_next_quiz(quiz_id: int):
+
+    connection, cursor = connect_database()
+
+    query1 = f"""
+    SELECT q.link_video, q.title, q.question FROM Quiz q RIGHT JOIN Game g ON q.game_id = g.id
+    RIGHT JOIN GamifiedJourney gj ON g.gamified_journey_id = gj.id
+    RIGHT JOIN Company c ON gj.company_id = c.id
+    WHERE q.id = {quiz_id};
+    """
+    query2 = f"""
+    SELECT a.alternative_text FROM Alternative a 
+    RIGHT JOIN Quiz q ON a.quiz_id = q.id
+    RIGHT JOIN Game g ON q.game_id = g.id
+    RIGHT JOIN GamifiedJourney gj ON g.gamified_journey_id = gj.id
+    RIGHT JOIN Company c ON gj.company_id = c.id
+    WHERE q.id = {quiz_id};
+    """
+
+    try:
+        cursor.execute(query1)
+        quiz = cursor.fetchone()
+        cursor.execute(query2)
+        alternatives = cursor.fetchall()
+    except Exception as error:
+        connection.close()
+        return None
+    else:
+        quiz["alternatives"] = alternatives
+
+        connection.close()
+
+        return quiz
 
 
 def insert_quiz(quiz: Quiz):
