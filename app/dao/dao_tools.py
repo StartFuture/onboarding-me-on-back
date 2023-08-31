@@ -5,17 +5,18 @@ from app.schemas.tool import Tool, EmployeeTool
 from app.schemas.category_tool import CategoryTool
 
 
-def select_tools(id: int):
+def select_tools(company_id: int):
     
     connection, cursor = connect_database()
     
     query = f"""
-    SELECT t.name, t.link_download, t.score FROM Tool t
+    SELECT t.name, t.link_download, t.score, t.game_id, ct.name as category_name FROM Tool t
+	right join CategoryTool ct on t.category_id = ct.id 
     left join Game g on g.id = t.game_id 
     left join GamifiedJourney gj on gj.id = g.gamified_journey_id 
     left join Company c on c.id = gj.company_id 
     WHERE
-    c.id ={id}
+    c.id = {company_id}
     ;
     """
     
@@ -92,6 +93,7 @@ def delete_tool(tool_id : int, game_id: int):
         
     except Exception as error:
         connection.close()
+        print(error)
         return False
 
     else:
@@ -126,31 +128,6 @@ def verify_tool_exists(name: str = None, id_tool: int = None):
         return bool(tool_id)
 
 
-def select_category_tool(id: int):
-    
-    connection, cursor = connect_database()
-    
-    query = f"""
-    SELECT ct.name FROM CategoryTool ct 
-    left join Tool t on t.id = ct.id 
-    WHERE t.id = {id}
-    ;
-    """
-
-    try:
-        cursor.execute(query)
-        
-    except Exception as error:
-        connection.close()
-        return None
-    
-    else:
-        category_tool_list = cursor.fetchone()
-        connection.close()
-        
-        return category_tool_list
-
-
 def insert_category_tool(category_tool: CategoryTool):
     
     connection, cursor = connect_database()
@@ -180,6 +157,7 @@ def insert_category_tool(category_tool: CategoryTool):
         connection.close()
 
         return category_tool_id
+    
 
 def update_category_tool(category_tool: CategoryTool):
     
@@ -207,8 +185,8 @@ def update_category_tool(category_tool: CategoryTool):
         return True
     
     
-def delete_category_tool(category_tool_id: int):
-    
+def select_all_tools_by_category_id(category_tool_id: int):
+
     connection, cursor = connect_database()
     
     query = f"""
@@ -223,50 +201,113 @@ def delete_category_tool(category_tool_id: int):
         
     except Exception as error:
         connection.close()
+        return None
+    
+    else:
+        list_tools_id = cursor.fetchall()
+        connection.close()
+        
+        return list_tools_id
+         
+
+def delete_all_tools_from_a_category(category_id: int, list_tools: list):
+    
+    connection, cursor = connect_database()
+    
+    ids = [tool['id'] for tool in list_tools]
+ 
+    placeholder = ','.join(['%s'] * len(ids))
+    
+    query = f"""
+    DELETE FROM Tool  
+    WHERE category_id = %s AND id IN ({placeholder})
+    ;
+    """
+    
+    try:
+        params = (category_id, ) + tuple(ids)
+        cursor.execute(query, params)
+        
+    except Exception as error:
+        connection.close()
         return False
     
     else:
+        connection.commit()
+        connection.close()
         
-        list_tools_id = cursor.fetchall()
-        ids = [tool['id'] for tool in list_tools_id]
- 
-        placeholder = ','.join(['%s'] * len(ids))
-        
-        query = f"""
-        DELETE FROM Tool  
-        WHERE category_id = %s AND id IN ({placeholder});
-        ;
-        """
-        
-        try:
-            cursor.execute(query, [category_tool_id] + ids)
-            
-        except Exception as error:
-            connection.close()
-            return False
-        
-        else:
-            
-            query = f"""
-            DELETE FROM CategoryTool
-            WHERE id = {category_tool_id}
-            ;
-            """
-
-            try:
-                cursor.execute(query)
-                
-            except Exception as error:
-                connection.close()
-                return False
-
-            else:
-                
-                connection.commit()
-                connection.close()
-
-                return True
+        return True
     
+    
+def delete_linked_tool(list_tools: list) :
+    
+    connection, cursor = connect_database()
+    
+    ids = [tool['id'] for tool in list_tools]
+ 
+    placeholder = ','.join(['%s'] * len(ids))
+    
+    query = f"""
+    DELETE FROM onboarding_me.Employee_Tool
+    WHERE tool_id IN ({placeholder})
+    ;
+    """
+    
+    try:
+        cursor.execute(query, ids)
+        
+    except Exception as error:
+        connection.close()
+        return False
+    
+    else:
+        connection.commit()
+        connection.close()
+        
+        return True
+        
+
+def delete_category_tool(category_tool_id: int):
+    
+    connection, cursor = connect_database()
+    
+    list_tools_id = select_all_tools_by_category_id(category_tool_id)
+    
+    if not list_tools_id: 
+        return False
+    
+    linked_tools_deleted = delete_linked_tool(list_tools_id)
+    
+    if not linked_tools_deleted: 
+        return False 
+    
+        
+    tools_deleted = delete_all_tools_from_a_category(category_tool_id, list_tools_id)
+    
+    if not tools_deleted: 
+        return False
+    
+            
+    query = f"""
+    DELETE FROM CategoryTool
+    WHERE id = {category_tool_id}
+    ;
+    """
+
+    try:
+        cursor.execute(query)
+        
+    except Exception as error:
+        connection.close()
+        return False
+
+    else:
+        
+        connection.commit()
+        connection.close()
+
+        return True
+
 
 def verify_if_category_exists(category_name: str = None, category_id: int = None):
     
@@ -300,35 +341,6 @@ def verify_if_category_exists(category_name: str = None, category_id: int = None
         connection.close()
         
         if category_exists:
-            return True
-        
-    return False
-
-    
-def verify_if_company_exists(company_id: int):
-    
-    connection, cursor = connect_database()
-    
-    query =f"""
-    SELECT id
-    FROM Company
-    WHERE id = {company_id}
-    ;
-    """
-    
-    try:
-        cursor.execute(query)
-        
-    except Exception as error:
-        connection.close()
-        return False    
-    
-    else:    
-        
-        company_exists = cursor.fetchone()
-        connection.close()
-        
-        if company_exists:
             return True
         
     return False
@@ -498,11 +510,16 @@ def verify_score_tool_exists(game_id: int):
         return 1 if bool(game_id) else 0
 
 
-def get_id_tools():
+def get_count_tools(gamified_journey: int):
 
     connection, cursor = connect_database()
 
-    query = f'SELECT id FROM Tool;'
+    query = f"""
+    SELECT COUNT(t.id) FROM GamifiedJourney gj  
+    LEFT JOIN Game g ON g.gamified_journey_id  = gj.id
+    LEFT JOIN Tool t ON t.game_id = g.id
+    WHERE gj.id = {gamified_journey};
+    """
 
     try:
         cursor.execute(query)
@@ -510,19 +527,30 @@ def get_id_tools():
         connection.close()
         return None
     else:
-        tools_id = cursor.fetchall()
+        tools_id = cursor.fetchone()
 
         connection.close()
         
-        return tools_id
+        return tools_id["COUNT(t.id)"]
 
 
-def ended_game_tools(tools_id: list):
+def ended_game_tools(employee_id: int):
 
-    for tool_id in tools_id:
-        tool_id_completed = verify_tool_completed(tool_id=tool_id["id"])
+    connection, cursor = connect_database()
 
-        if not tool_id_completed:
-            return False
-        
-    return True
+    query = f"""
+    SELECT COUNT(et.id) FROM Employee e LEFT JOIN 
+    Employee_Tool et ON et.employee_id = {employee_id};
+    """
+
+    try:
+        cursor.execute(query)
+    except Exception as error:
+        connection.close()
+        return None
+    else:
+        tools_completed = cursor.fetchone()
+
+        connection.close()
+
+        return tools_completed["COUNT(et.id)"]

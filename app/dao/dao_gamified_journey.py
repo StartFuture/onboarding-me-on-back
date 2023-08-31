@@ -60,3 +60,5 @@ def modify_video_company(company_id: int, new_link: str):
     finally:
         connection.commit()
         connection.close()
+        
+        return True
