@@ -1,7 +1,6 @@
-from typing import List
-
 from app.dao.dao import connect_database
 from app.schemas.quiz import Quiz, Alternative
+from app.utils import fix_video_link
 
 
 def select_quiz(company_id: int = None):
@@ -11,7 +10,7 @@ def select_quiz(company_id: int = None):
     if company_id:
         
         query = f"""
-        SELECT q.id, q.title, q.score  FROM Quiz q
+        SELECT q.link_video, q.title, q.score, q.quiz_type, q.question, q.game_id FROM Quiz q
         left join Game g on g.id = q.game_id 
         left join GamifiedJourney gj on gj.id = g.gamified_journey_id 
         left join Company c on c.id = gj.company_id 
@@ -34,18 +33,156 @@ def select_quiz(company_id: int = None):
 
          return quiz_list
 
+      
+def select_quiz_alternatives(quiz_id: int):
+    
+    connection, cursor = connect_database()
+    
+    query = f"""
+    SELECT id
+    FROM onboarding_me.Alternative
+    WHERE quiz_id = {quiz_id}
+    ;
+    """
+    
+    try: 
+        cursor.execute(query)
+        
+    except Exception as error:
+        connection.close()
+        return None
 
+    else:
+        list_alternatives = cursor.fetchall()
+        connection.close()
+        
+        return list_alternatives
+    
+    
+def select_linked_quiz(alternative_id: int):
+     
+    connection, cursor = connect_database()
+    
+    query = f"""
+    SELECT id, employee_id, alternative_id
+    FROM onboarding_me.Employee_Alternative
+    WHERE alternative_id = {alternative_id}
+    ;
+    """
+    
+    try: 
+        cursor.execute(query)
+        
+    except Exception as error:
+        connection.close()
+        return None
+
+    else:
+        alternative_id = cursor.fetchall()
+        connection.close()
+        
+        return [item['alternative_id'] for item in alternative_id]
+    
+
+def select_quiz_id_completed(employee_id: int):
+
+    connection, cursor = connect_database()
+
+    query = f"""
+    SELECT q.id FROM Employee e LEFT JOIN Employee_Alternative ea ON ea.employee_id = e.id
+    LEFT JOIN Alternative a ON ea.alternative_id = a.id
+    LEFT JOIN Quiz q ON a.quiz_id = q.id
+    WHERE e.id = {employee_id}
+    ORDER BY q.id;
+    """
+
+    try:
+        cursor.execute(query)
+    except Exception as error:
+        connection.close()
+        return None
+    else:
+        quizzes_id = cursor.fetchall()
+
+        list_id_quizzes = tuple([list(quiz_id.values())[0] for quiz_id in quizzes_id])
+
+        connection.close()
+
+        return list_id_quizzes
+    
+
+def select_next_quiz_id(employee_id: int, quizzes_completed: tuple):
+
+    connection, cursor = connect_database()
+
+    query = f"""
+    SELECT q.id FROM Employee e LEFT JOIN GamifiedJourney gj ON gj.company_id = e.company_id
+    LEFT JOIN Game g ON g.gamified_journey_id = gj.id
+    LEFT JOIN Quiz q ON q.game_id = g.id
+    WHERE e.id = {employee_id} AND q.id NOT IN {quizzes_completed}
+    ORDER BY q.id;
+    """
+    
+
+    try:
+        cursor.execute(query)
+    except Exception as error:
+        connection.close()
+        return None
+    else:
+        quizzes_id = cursor.fetchone()
+
+        connection.close()
+
+        return quizzes_id["id"]
+
+
+def select_next_quiz(quiz_id: int):
+
+    connection, cursor = connect_database()
+
+    query1 = f"""
+    SELECT q.link_video, q.title, q.question FROM Quiz q RIGHT JOIN Game g ON q.game_id = g.id
+    RIGHT JOIN GamifiedJourney gj ON g.gamified_journey_id = gj.id
+    RIGHT JOIN Company c ON gj.company_id = c.id
+    WHERE q.id = {quiz_id};
+    """
+    query2 = f"""
+    SELECT a.alternative_text FROM Alternative a 
+    RIGHT JOIN Quiz q ON a.quiz_id = q.id
+    RIGHT JOIN Game g ON q.game_id = g.id
+    RIGHT JOIN GamifiedJourney gj ON g.gamified_journey_id = gj.id
+    RIGHT JOIN Company c ON gj.company_id = c.id
+    WHERE q.id = {quiz_id};
+    """
+
+    try:
+        cursor.execute(query1)
+        quiz = cursor.fetchone()
+        cursor.execute(query2)
+        alternatives = cursor.fetchall()
+    except Exception as error:
+        connection.close()
+        return None
+    else:
+        quiz["alternatives"] = alternatives
+
+        connection.close()
+
+        return quiz
 
 
 def insert_quiz(quiz: Quiz):
 
     connection, cursor = connect_database() 
     
+    link_video = fix_video_link(quiz.link_video)
+    
     query = f"""
     INSERT INTO Quiz 
     (link_video, score, title, question, quiz_type, game_id)
     VALUES
-    ('{quiz.link_video}', {quiz.score}, '{quiz.title}', '{quiz.question}', '{quiz.quiz_type}', {quiz.game_id});
+    ('{link_video}', {quiz.score}, '{quiz.title}', '{quiz.question}', '{quiz.quiz_type}', {quiz.game_id});
     """
     
     try:
@@ -91,8 +228,8 @@ def insert_alternatives(alternatives: list[Alternative], quiz_id: int):
         
         else: 
             connection.commit()
-            connection.close()
-
+            
+    connection.close()
     return True 
 
 
@@ -100,10 +237,12 @@ def update_quiz(quiz: Quiz):
    
     connection, cursor = connect_database()
     
+    link_video = fix_video_link(quiz.link_video)
+    
     query = f"""
     UPDATE Quiz 
     SET 
-    link_video = '{quiz.link_video}', score = {quiz.score}, title = '{quiz.title}', question = '{quiz.question}', quiz_type = '{quiz.quiz_type}'
+    link_video = '{link_video}', score = {quiz.score}, title = '{quiz.title}', question = '{quiz.question}', quiz_type = '{quiz.quiz_type}'
     WHERE id = '{quiz.quiz_id}' AND game_id = '{quiz.game_id}';
     """ 
     
@@ -122,24 +261,66 @@ def update_quiz(quiz: Quiz):
         return True
 
 
-def delete_quiz_alternative(alternatives: List[int], quiz_id: int, game_id: int):
+def delete_linked_quiz(alternative_id: int):
     
     connection, cursor = connect_database()
     
+    query = f"""
+    DELETE FROM Employee_Alternative
+    WHERE alternative_id = {alternative_id}
+    ;
+    """ 
+    
+    try:    
+        cursor.execute(query)
+    
+    except Exception as error:
+        connection.close()
+        return False
+
+    else:
+        
+        connection.commit()
+        connection.close()
+        
+        return True
+
+
+
+def delete_quiz_alternative(quiz_id: int, game_id: int):
+    
+    connection, cursor = connect_database()
+    connection.autocommit = False
+    
+    list_alternatives = select_quiz_alternatives(quiz_id)
+    
+    if not list_alternatives: 
+        return False
+    
+    ids = [alternative["id"] for alternative in list_alternatives]
+    
+    for id in ids:
+        linked_quiz = select_linked_quiz(id)
+    
+    deleted_linked_quiz = delete_linked_quiz(linked_quiz[0])
+    
+    if not deleted_linked_quiz:
+        return False
+    
+    deleted_alternative = delete_alternative(connection=connection, cursor=cursor, alternatives=ids, quiz_id=quiz_id)
+    
+    if not deleted_alternative:
+        return False
+        
+    query = f"""
+    DELETE FROM Quiz 
+    WHERE 
+    game_id = {game_id} and id = {quiz_id} 
+    ;
+    """    
+      
     try:
-        
-        connection.autocommit = False
-        
-        deleted = delete_alternative(connection=connection, cursor=cursor, alternatives=alternatives, quiz_id=quiz_id)
-        
-        if deleted:
-            
-            query = f"""
-            DELETE FROM Quiz WHERE game_id = {game_id} and id = {quiz_id} 
-            ;
-            """     
-            cursor.execute(query)
-            
+        cursor.execute(query)
         
     except Exception as error:
         connection.close()
@@ -147,16 +328,14 @@ def delete_quiz_alternative(alternatives: List[int], quiz_id: int, game_id: int)
         
     else:
         connection.commit()
-        connection.autocommit = True
         connection.close()
     
     return True
 
 
-def delete_alternative(alternatives: List[int], quiz_id: int, connection = None, cursor = None):
+def delete_alternative(alternatives: list, quiz_id: int, connection = None, cursor = None):
    
     placeholder = ','.join(['%s'] * len(alternatives))
-        
    
     if cursor and connection: 
         
@@ -169,7 +348,7 @@ def delete_alternative(alternatives: List[int], quiz_id: int, connection = None,
         try:    
             cursor.execute(query, [quiz_id] + alternatives)
         
-        except Exception as error:   
+        except Exception as error:  
             connection.close()
             return False
 
