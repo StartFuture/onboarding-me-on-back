@@ -6,6 +6,7 @@ from app.schemas.quiz import EmployeeAlternative
 from app.dao.dao_tools import sum_score
 from app.dao.dao_quiz import get_max_score
 
+
 def insert_employee_answer(employee_alternative: EmployeeAlternative):
 
     connection, cursor = connect_database()
@@ -202,7 +203,6 @@ def insert_medal_score(employee_id: int, game_id:int, score_id: int):
 
 
     try:
-        
         cursor.execute(query)
         
     except Exception as error:
@@ -433,7 +433,6 @@ def get_count_quiz(game_id: int):
     
     
 def finished_quiz_game(employee_id: int, game_id: int):
-    
 
     try:
         count_quiz = get_count_quiz(game_id=game_id)

@@ -85,17 +85,6 @@ def del_tool(tool_id: int, game_id: int):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "The tool has not been deleted!"})  
     
     
-@router.get("/category/{tool_id}")
-def get_category_tool(tool_id: int):
-    
-    category_tool = dao.select_category_tool(tool_id)
-    
-    if category_tool:
-        return JSONResponse(status_code=status.HTTP_200_OK, content=category_tool)
-    else:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "This company don't have this tool_id!"})
-    
-    
 @router.post("/category/register")
 def register_category_tool(category_tool: CategoryTool):
 
