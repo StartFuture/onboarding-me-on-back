@@ -1,6 +1,5 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
 from app.routers.company import router as router_company
 from app.routers.tool import router as router_tool
 from app.routers.quiz import router as router_quiz
@@ -8,7 +7,6 @@ from app.routers.employee import router as router_employee
 from app.routers.gamified_journey import router as router_gamified_journey
 from app.routers.medal_score import router as router_medal_score
 from app.routers.welcome_kit import router as router_welcome_kit
-
 
 
 

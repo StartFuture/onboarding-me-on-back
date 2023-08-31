@@ -3,6 +3,7 @@ from typing import Optional
 
 from app import parameters
 
+
 class EmployeeAlternative(BaseModel):
     employee_id: int
     alternative_id: int
