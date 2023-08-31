@@ -24,6 +24,7 @@ def get_medal(employee_id: int):
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "This employee doesn't have a medal!"})
 
+
 @router.post("/create")
 def create_medal(medal_score_employee: Medal_Score_Employee):
     

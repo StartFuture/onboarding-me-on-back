@@ -1,5 +1,4 @@
-from app.dao import dao_employee as dao
-from app.dao import dao_quiz 
+from app.dao import dao_employee as dao 
 from app.dao.dao_quiz import verify_if_quiz_id_exists, verify_if_game_id_exists
 from app.schemas.quiz import EmployeeAlternative
 

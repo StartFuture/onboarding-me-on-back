@@ -410,6 +410,7 @@ def get_tool_score(employee_tool: EmployeeTool):
 
         return score["score"]
     
+    
 def get_game_id_tool(employee_tool: EmployeeTool):
 
     connection, cursor = connect_database()
@@ -429,6 +430,7 @@ def get_game_id_tool(employee_tool: EmployeeTool):
         connection.close()
 
         return game_id["game_id"]
+    
     
 def sum_score(game_id: int):
 
