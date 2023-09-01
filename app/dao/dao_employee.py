@@ -2,9 +2,11 @@ from datetime import datetime
 from decimal import Decimal
 
 from app.dao.dao import connect_database
+from app.schemas.employee import FeedBackEmployee
 from app.schemas.quiz import EmployeeAlternative
 from app.dao.dao_tools import sum_score
 from app.dao.dao_quiz import get_max_score
+
 
 def insert_employee_answer(employee_alternative: EmployeeAlternative):
 
@@ -31,6 +33,16 @@ def insert_employee_answer(employee_alternative: EmployeeAlternative):
 
         return True
 
+def select_feedback_company(company_id: int):
+    
+    connection, cursor = connect_database()
+
+    query = f"""
+    SELECT ef.employee_id, ef.grade,ef.message, ef.feedback_type FROM Employee_Feedback ef
+    LEFT JOIN Employee e ON e.id = ef.employee_id 
+    LEFT JOIN Company c ON c.id = e.company_id 
+    WHERE c.id = {company_id}
+    """
 
 def get_employee_answer(employee_id: int):
     
@@ -46,17 +58,22 @@ def get_employee_answer(employee_id: int):
     
     try:
         cursor.execute(query)
-
     except Exception as error:
         connection.close()
         return None
-
     else:
+        feedback_list =  cursor.fetchall()
+        connection.close()
+        return feedback_list
 
-         data_list = cursor.fetchall()
-         connection.close()
+def insert_feedback(feedback_employee: FeedBackEmployee):
+    connection, cursor = connect_database()
 
-         return data_list 
+    query = f"""
+    INSERT INTO onboarding_me.Employee_Feedback
+    (employee_id, grade, message, feedback_type)
+    VALUES({feedback_employee.employee_id}, {feedback_employee.grade}, '{feedback_employee.message}', '{feedback_employee.feedback_type}');
+    """
      
      
 def get_game_id_quiz(alternative_id = int):
@@ -82,7 +99,6 @@ def get_game_id_quiz(alternative_id = int):
         connection.close()
 
         return game_id["game_id"]
-     
     
 def saving_employee_score(employee_alternative: EmployeeAlternative, score_exists: bool = False):
     
@@ -202,7 +218,6 @@ def insert_medal_score(employee_id: int, game_id:int, score_id: int):
 
 
     try:
-        
         cursor.execute(query)
         
     except Exception as error:
@@ -309,7 +324,7 @@ def verify_employee_exists(employee_id: int, company_id: int):
              return True
     
     return False
-
+  
 
 def verify_alternative_exists(alternative_id: int, quiz_id: int):
     
@@ -433,7 +448,6 @@ def get_count_quiz(game_id: int):
     
     
 def finished_quiz_game(employee_id: int, game_id: int):
-    
 
     try:
         count_quiz = get_count_quiz(game_id=game_id)
@@ -448,4 +462,3 @@ def finished_quiz_game(employee_id: int, game_id: int):
             return False
            
     return True
-    

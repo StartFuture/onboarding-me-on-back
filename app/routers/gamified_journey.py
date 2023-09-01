@@ -20,7 +20,6 @@ router = APIRouter(
 def get_video_company(company_id: int):
     
     company = select_company(company_id)
-
     
     if company == None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "This company doesn't exist!"})
@@ -33,24 +32,29 @@ def get_video_company(company_id: int):
         
         return JSONResponse(status_code=status.HTTP_200_OK, content=video)
 
+
 @router.post("/create")
 def create_video_company(gamifiedJourney: GamifiedJourney):
     
     company = select_company(gamifiedJourney.company_id)
     
-    if company == None:
+    if company:
         video = insert_video_company(company_id=gamifiedJourney.company_id, link=gamifiedJourney.welcome_video_link)
-        return JSONResponse(status_code=status.HTTP_200_OK, content=video)
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "This company's video can't be created"})
     else:
         video = modify_video_company(company_id=gamifiedJourney.company_id, new_link=gamifiedJourney.welcome_video_link)
         return JSONResponse(status_code=status.HTTP_200_OK, content=video)
 
+
 @router.put("/update")
 def update_video_company(company_id: int, new_link: str):
     
-    video = modify_video_company(company_id=id, new_link=new_link)
+    video = modify_video_company(company_id=company_id, new_link=new_link)
+    
+    if company_id == None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "This company doesn't exist!"})
 
     if video:
         return JSONResponse(status_code=status.HTTP_200_OK, content={"msg": "The video has been deleted!"})
     else:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "This company don't have a video!"})
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "This company doesn't have a video!"})

@@ -27,7 +27,11 @@ def insert_video_company(company_id: int, link: str):
     connection, cursor = connect_database()
     
     query = f"""
-    INSERT INTO GamifiedJourney(welcome_video_link, company_id) VALUES ('{link}', '{company_id}');
+    INSERT INTO GamifiedJourney
+    (welcome_video_link, company_id) 
+    VALUES 
+    ('{link}', '{company_id}')
+    ;
     """
     try:
         print(query)
@@ -56,3 +60,5 @@ def modify_video_company(company_id: int, new_link: str):
     finally:
         connection.commit()
         connection.close()
+        
+        return True
