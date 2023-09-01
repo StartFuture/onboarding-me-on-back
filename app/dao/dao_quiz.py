@@ -258,26 +258,6 @@ def update_quiz(quiz: Quiz):
 
         return True
 
-
-def delete_quiz_alternative(alternatives: List[int], quiz_id: int, game_id: int):
-
-    connection, cursor = connect_database()
-
-    try:
-
-        connection.autocommit = False
-
-        deleted = delete_alternative(
-            connection=connection, cursor=cursor, alternatives=alternatives, quiz_id=quiz_id)
-
-        if deleted:
-
-            query = f"""
-            DELETE FROM Quiz WHERE game_id = {game_id} and id = {quiz_id} 
-            ;
-            """
-            cursor.execute(query)
-
             
 def delete_linked_quiz(alternative_id: int):
     
