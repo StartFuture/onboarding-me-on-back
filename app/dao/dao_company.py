@@ -1,6 +1,9 @@
 import logging
+from io import BytesIO, StringIO
 
 from app.dao.dao import connect_database
+from app.schemas.company import Company
+
 
 def select_company(company_id: int):
     
@@ -82,3 +85,61 @@ def verify_if_company_exists(company_id: int):
             return True
         
     return False
+
+
+async def insert_company(company: Company):
+    
+    connection, cursor = connect_database()
+    
+    company_image = BytesIO(str(company.logo).encode()).read()
+    
+    
+    query ="""
+    INSERT INTO Company
+    (company_name, trading_name, logo, cnpj, email, company_password, state_register)
+    VALUES
+    (%s, %s, %s, %s, %s, %s, %s);
+    """
+    
+    params = (company.name, company.trading_name, company_image, company.cnpj, company.email, company.password, company.state_register)
+    
+    try:
+        cursor.execute(query, params)
+
+    except Exception as error:
+        print(error)
+        connection.close()
+        return False
+
+    else:
+        connection.commit()
+        connection.close()
+        
+        return True
+    
+
+def verify_company_exists_by_email(company_email: str):
+    
+    connection, cursor = connect_database()
+    
+    query = f"""
+    SELECT email
+    FROM Company c 
+    WHERE c.email = '{company_email}';
+    """
+    
+    try:
+        cursor.execute(query)
+        
+    except Exception as error:
+        connection.close()
+        return False
+    
+    else:
+        user_exists = cursor.fetchone()
+        connection.close()
+        if user_exists:
+            return True
+        
+        return False
+    

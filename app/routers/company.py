@@ -1,7 +1,10 @@
-from fastapi import APIRouter,status, HTTPException
+from fastapi import APIRouter, status, HTTPException
 from fastapi.responses import JSONResponse
+from passlib.context import CryptContext
+
+
 from app.schemas.company import Company 
-from app.dao.dao_company import select_company
+from app.dao import dao_company as dao
 
 router = APIRouter(
     prefix="/company",
@@ -10,14 +13,22 @@ router = APIRouter(
     ]
 )
 
+crypt_context = CryptContext(schemes=['bcrypt'])
 
-@router.get("/{id}")
-def get_company(id):
+
+@router.post("/register")
+async def create_company(company: Company):
     
-    company = select_company(company_id=id)
+    company_exists = dao.verify_company_exists_by_email(company.email)
     
-    if company:
-        return JSONResponse(status_code=status.HTTP_200_OK, content=company)
+    if company_exists:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"msg": "Company already exists!"})
+    
+    company.password = crypt_context.hash(company.password)
+    
+    company_registered = await dao.insert_company(company)
+    
+    if company_registered:
+        return JSONResponse(status_code=status.HTTP_201_CREATED, content={"msg": "Successfully created"})
     else:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "This company don't exists!"})
-
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"msg": "Error in company"})

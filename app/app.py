@@ -9,7 +9,6 @@ from app.routers.medal_score import router as router_medal_score
 from app.routers.welcome_kit import router as router_welcome_kit
 
 
-
 app = FastAPI()
 
 

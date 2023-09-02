@@ -1,10 +1,15 @@
 from pydantic import BaseModel, Field
+from fastapi import UploadFile, File
 
 from app import parameters
 
 
 class Company(BaseModel):
-    id: int
     name: str
+    trading_name: str
+    logo: str
     cnpj: str = Field(pattern=parameters.dict_regex["cnpj pattern"])
+    email: str = Field(pattern=parameters.dict_regex["email pattern"])
+    password: str
+    state_register: str
     
