@@ -257,7 +257,6 @@ def update_quiz(quiz: Quiz):
         connection.close()
 
         return True
-
             
 def delete_linked_quiz(alternative_id: int):
     
