@@ -462,3 +462,48 @@ def finished_quiz_game(employee_id: int, game_id: int):
             return False
            
     return True
+
+
+def select_sum_total_points(employee_id: int):
+
+    connection, cursor = connect_database()
+
+    query = f"""
+    SELECT SUM(s.total_points) FROM Score s
+    WHERE s.employee_id = {employee_id};
+    """
+
+    try:
+        cursor.execute(query)
+    except Exception as error:
+        connection.close()
+        return None
+    else:
+        total_points = cursor.fetchone()
+
+        connection.close()
+
+        return int(total_points["SUM(s.total_points)"])
+    
+
+def get_medals_by_employee_id(employee_id: int):
+
+    connection, cursor = connect_database()
+
+    query = f"""
+    SELECT m.name, m.image, s.game_id FROM Score s LEFT JOIN Medal_Score ms ON ms.score_id = s.id
+    LEFT JOIN Medal m ON m.id = ms.medal_id
+    WHERE s.employee_id = {employee_id};
+    """
+
+    try:
+        cursor.execute(query)
+    except Exception as error:
+        connection.close()
+        return None
+    else:
+        medals_employee = cursor.fetchall()
+
+        connection.close()
+
+        return medals_employee
