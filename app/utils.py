@@ -18,6 +18,10 @@ def verify_is_allowed_file(filename):
     return re.search(dict_regex["allowed image extensions"] + '$', filename) is not None
 
 
+def generate_image(image):
+        yield image
+
+
 def send_email(employee_email, email_body, email_subject):
     
     msg = email.message.Message()

@@ -44,8 +44,8 @@ async def register_welcome_kit(name: str, image: UploadFile = File(...)):
         return JSONResponse(status_code=status.HTTP_200_OK, content={"msg": "Successfully registered"})
     else:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={"msg": "The welcome kit has not been registered"})
-    
-    
+
+ 
 @router.get("/welcomekit-item")    
 def get_welcome_kit_item(welcome_kit_id: int, item_id: int):
     

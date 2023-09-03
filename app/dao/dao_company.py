@@ -1,31 +1,43 @@
-import logging
 from io import BytesIO, StringIO
 
 from app.dao.dao import connect_database
 from app.schemas.company import Company
 
 
-def select_company(company_id: int):
+def select_company(company_id: int, type: str):
     
     connection, cursor = connect_database()
     
-    query = f"""
-    SELECT * from Company
-	WHERE id = '{company_id}';
-    """
+    if type == 'company':
+        
+        query = f"""
+        SELECT c.company_name, c.trading_name, c.cnpj, c.company_password, c.state_register 
+        from Company c 
+        WHERE id = {company_id}
+        ;
+        """
+
+    if type == 'logo':
+        
+        query = f"""
+        SELECT c.logo 
+        from Company c 
+        WHERE id = {company_id}
+        ;
+        """
 
     try:
         cursor.execute(query)
+        
     except Exception as error:
-        company = None
-        logging.error(f"error at select company: {error}")
+        connection.close()
+        return None
+    
     else:
         company = cursor.fetchone()
-    finally:
-        connection.commit()
         connection.close()
-
-    return company
+        
+        return company
 
 
 def get_company_id(quiz_id: int = None, tool_id: int = None):
@@ -56,43 +68,13 @@ def get_company_id(quiz_id: int = None, tool_id: int = None):
         connection.close()
 
         return company_id["id"]
-
-
-def verify_if_company_exists(company_id: int):
     
-    connection, cursor = connect_database()
-    
-    query =f"""
-    SELECT id
-    FROM Company
-    WHERE id = {company_id}
-    ;
-    """
-    
-    try:
-        cursor.execute(query)
-        
-    except Exception as error:
-        connection.close()
-        return False    
-    
-    else:    
-        
-        company_exists = cursor.fetchone()
-        connection.close()
-        
-        if company_exists:
-            return True
-        
-    return False
-
 
 async def insert_company(company: Company):
     
     connection, cursor = connect_database()
     
-    company_image = BytesIO(str(company.logo).encode()).read()
-    
+    company_image = str.encode(company.logo)
     
     query ="""
     INSERT INTO Company
@@ -107,7 +89,6 @@ async def insert_company(company: Company):
         cursor.execute(query, params)
 
     except Exception as error:
-        print(error)
         connection.close()
         return False
 
@@ -142,4 +123,32 @@ def verify_company_exists_by_email(company_email: str):
             return True
         
         return False
+
+
+def verify_if_company_exists(company_id: int):
     
+    connection, cursor = connect_database()
+    
+    query =f"""
+    SELECT id
+    FROM Company
+    WHERE id = {company_id}
+    ;
+    """
+    
+    try:
+        cursor.execute(query)
+        
+    except Exception as error:
+        connection.close()
+        return False    
+    
+    else:    
+        
+        company_exists = cursor.fetchone()
+        connection.close()
+        
+        if company_exists:
+            return True
+        
+    return False

@@ -5,8 +5,8 @@ from io import BytesIO
 dicionario = {
   "name": "string",
   "trading_name": "string",
-  "cnpj": "12345475070193",
-  "email": "I1zewewemmmsMJ0__jYG9DW43an7F1@xdnadppxlpjplprwacdgzrxwzfkmntxmznrwxldypfboikqjvapfboptaikbrakkygqydugpmzrjwwrtuneemwgqkrn.x",
+  "cnpj": "12145453042193",
+  "email": "I1ze3ewemm4sMJ0__jYG9DW43an742@xdnadppxlpjplprwacdgzrxwzfkmntxmznrwxldypfboikqjvapfboptaikbrakkygqydugpmzrjwwrtuneemwgqkrn.x",
   "password": "string",
   "state_register": "string"
 }
@@ -30,9 +30,9 @@ dicionario['logo'] = str(arquivo)
 
 
 
-fodase = requests.post('http://127.0.0.1:8000/company/register', json=dicionario)
+request = requests.post('http://127.0.0.1:8000/company/register', json=dicionario)
 
-print(fodase.content)
+print(request.content)
 
 
 
