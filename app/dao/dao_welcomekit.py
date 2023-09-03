@@ -2,12 +2,12 @@ from app.dao.dao import connect_database
 from fastapi import UploadFile
 
 
-def select_welcome_kit_image(employee_id: int):
+def select_welcome_kit(employee_id: int):
     
     connection, cursor  = connect_database()
     
     query = f"""
-    SELECT wk.image
+    SELECT wk.name, wk.image
     FROM WelcomeKit wk
     LEFT JOIN Tracking t ON t.welcome_kit_id = wk.id 
     LEFT JOIN Employee e ON t.employee_id = e.id 
@@ -27,7 +27,7 @@ def select_welcome_kit_image(employee_id: int):
         welcome_kit_image = cursor.fetchone()
         connection.close()
         
-        return welcome_kit_image
+        return welcome_kit_image['name'], welcome_kit_image['image']
     
     
 def select_welcome_kit_item_image(welcome_kit_id: int, item_id: int):
@@ -54,7 +54,7 @@ def select_welcome_kit_item_image(welcome_kit_id: int, item_id: int):
         welcome_kit_item_image = cursor.fetchone()
         connection.close()
         
-        return welcome_kit_item_image
+        return welcome_kit_item_image['name'], welcome_kit_item_image['image']
     
 
 async def insert_welcome_kit(welcome_kit_name: str = None, welcome_kit_image: UploadFile = None, kit_item_name: str = None, kit_item_image: UploadFile = None):    

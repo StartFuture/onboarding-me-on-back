@@ -181,3 +181,27 @@ def create_feedback_employee(feedback_employee: FeedBackEmployee):
         return JSONResponse(status_code=status.HTTP_200_OK, content={"msg": "Successfully registered!"})
     else:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"msg": "ERROR!"})
+
+
+@router.get("/total-points-medals")
+def return_total_points_medals(employee_id: int, company_id: int):
+
+    employee_exists = dao.verify_employee_exists(employee_id, company_id)
+
+    if not employee_exists:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "This employee not exists!"})
+    
+    total_points = dao.select_sum_total_points(employee_id)
+
+    if not total_points:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "The gamified journey points are null!"})
+
+    medals_employee = dao.get_medals_by_employee_id(employee_id)
+
+    if not medals_employee:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "The medals have not been found!"})
+    
+    if total_points and medals_employee:
+        return JSONResponse(status_code=status.HTTP_200_OK, content={"total_points": total_points, "medals": medals_employee})
+    else:
+        return HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"msg": "Unknown error!"})

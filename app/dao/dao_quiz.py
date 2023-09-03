@@ -258,7 +258,7 @@ def update_quiz(quiz: Quiz):
 
         return True
 
-            
+  
 def delete_linked_quiz(alternative_id: int):
     
     connection, cursor = connect_database()
