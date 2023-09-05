@@ -81,10 +81,18 @@ def update_tool(tool: Tool):
 def delete_tool(tool_id : int, game_id: int):
 
     connection, cursor = connect_database()
+    
+    list_tool = [{'id': tool_id}]
+    
+    deleted_link_tool = delete_linked_tool(list_tool)
+    
+    if not deleted_link_tool:
+        return False
+    
 
     query = f"""
     DELETE FROM Tool
-    WHERE game_id = {game_id} and id= {tool_id}
+    WHERE game_id = {game_id} and id = {tool_id}
     ;
     """
     
@@ -93,7 +101,6 @@ def delete_tool(tool_id : int, game_id: int):
         
     except Exception as error:
         connection.close()
-        print(error)
         return False
 
     else:
@@ -122,9 +129,8 @@ def verify_tool_exists(name: str = None, id_tool: int = None):
     
     else:
         tool_id = cursor.fetchone()
-
         connection.close()
-
+        
         return bool(tool_id)
 
 
@@ -280,7 +286,6 @@ def delete_category_tool(category_tool_id: int):
     
     if not linked_tools_deleted: 
         return False 
-    
         
     tools_deleted = delete_all_tools_from_a_category(category_tool_id, list_tools_id)
     
