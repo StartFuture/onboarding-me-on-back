@@ -1,5 +1,5 @@
 
-from app.dao.dao_tools import verify_if_company_exists
+from app.dao.dao_company import verify_if_company_exists
 from app.schemas.employee import FeedBackEmployee
 
 from app.dao import dao_employee as dao
