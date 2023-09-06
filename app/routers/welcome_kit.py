@@ -1,9 +1,10 @@
 
 from app.dao import dao_welcomekit as dao
-from app.utils import verify_is_allowed_file
+from app.utils import verify_is_allowed_file, generate_image
 
+import io
 from fastapi import APIRouter, status, HTTPException
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi import File, UploadFile
 
 router = APIRouter(
@@ -14,7 +15,7 @@ router = APIRouter(
 )
 
 
-@router.get("/welcomekit")
+@router.get("/welcomekit-image")
 def get_welcome_kit_image(employee_id: int):
     
     welcome_kit_exists = dao.verify_if_welcome_kit_exists(employee_id=employee_id)
@@ -22,12 +23,32 @@ def get_welcome_kit_image(employee_id: int):
     if not welcome_kit_exists:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"msg": "This welcome kit does not exists!"})
     
-    welcome_kit_image = dao.select_welcome_kit_image(employee_id)
+    wk_name, wk_image = dao.select_welcome_kit(employee_id)
     
-    if welcome_kit_image:
-        return JSONResponse(status_code=status.HTTP_200_OK, content=welcome_kit_image)
-    else:
+    if not wk_name and wk_image:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "Image not found!"})
+    
+    generate_image(wk_image)
+    
+    return StreamingResponse(io.BytesIO(wk_image), media_type="image/png")
+    
+    
+@router.get("/welcomekit-name")
+def get_welcome_kit_name(employee_id: int):
+    
+    welcome_kit_exists = dao.verify_if_welcome_kit_exists(employee_id=employee_id)
+    
+    if not welcome_kit_exists:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"msg": "This welcome kit does not exists!"})
+    
+    wk_name, wk_image = dao.select_welcome_kit(employee_id)
+    
+    if not wk_name and wk_image:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "Image not found!"})
+    
+    
+    return JSONResponse(status_code=status.HTTP_200_OK, content={"name": wk_name})
+  
  
     
 @router.post("/register/welcomekit")
@@ -46,7 +67,7 @@ async def register_welcome_kit(name: str, image: UploadFile = File(...)):
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={"msg": "The welcome kit has not been registered"})
     
     
-@router.get("/welcomekit-item")    
+@router.get("/welcomekit-item-namean")    
 def get_welcome_kit_item(welcome_kit_id: int, item_id: int):
     
     welcome_kit_exists = dao.verify_if_welcome_kit_exists(welcome_kit_id=welcome_kit_id)
@@ -54,12 +75,31 @@ def get_welcome_kit_item(welcome_kit_id: int, item_id: int):
     if not welcome_kit_exists:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"msg": "This welcome kit does not exists!!"})
     
-    welcome_kit_item_image = dao.select_welcome_kit_item_image(welcome_kit_id, item_id)
+    wki_name, wki_image = dao.select_welcome_kit_item_image(welcome_kit_id, item_id)
     
-    if welcome_kit_item_image:
-        return JSONResponse(status_code=status.HTTP_200_OK, content=welcome_kit_item_image)
-    else:
+    if not wki_name and wki_image:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "Welcome kit item not encountered"})
+    
+    return JSONResponse(status_code=status.HTTP_200_OK, content={"name": wki_name})
+
+
+@router.get("/welcomekit-item-image")    
+def get_welcome_kit_item_image(welcome_kit_id: int, item_id: int):
+    
+    welcome_kit_exists = dao.verify_if_welcome_kit_exists(welcome_kit_id=welcome_kit_id)
+    
+    if not welcome_kit_exists:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"msg": "This welcome kit does not exists!!"})
+    
+    wki_name, wki_image = dao.select_welcome_kit_item_image(welcome_kit_id, item_id)
+    
+    if not wki_name and wki_image:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "Welcome kit item not encountered"})
+    
+    
+    generate_image(wki_image)
+    
+    return StreamingResponse(io.BytesIO(wki_image), media_type="image/png")
     
     
 @router.post("/register/welcomekit-item")

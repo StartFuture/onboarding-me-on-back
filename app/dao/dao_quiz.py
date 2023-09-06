@@ -261,7 +261,7 @@ def update_quiz(quiz: Quiz):
 
         return True
 
-            
+
 def delete_linked_quiz(alternative_id: int):
     
     connection, cursor = connect_database()
@@ -334,6 +334,7 @@ def delete_quiz_alternative(quiz_id: int, game_id: int):
 
     return True
 
+  
 def delete_alternative(alternatives: list, quiz_id: int, connection = None, cursor = None):
    
     placeholder = ','.join(['%s'] * len(alternatives))
