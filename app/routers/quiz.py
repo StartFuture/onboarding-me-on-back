@@ -41,7 +41,6 @@ def register_quiz(quiz: Quiz):
     id_quiz = dao.insert_quiz(quiz)
     
     
-    
     alternative_registered = dao.insert_alternatives(quiz.alternatives, id_quiz['id_quiz'])
     
     if id_quiz and alternative_registered:
