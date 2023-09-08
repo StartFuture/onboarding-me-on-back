@@ -185,14 +185,17 @@ def update_category_tool(category_tool: CategoryTool):
         return True
     
     
-def select_all_tools_by_category_id(category_tool_id: int):
+def select_all_tools_by_category_id(category_tool_id: int, company_id: int):
 
     connection, cursor = connect_database()
     
     query = f"""
     SELECT t.id FROM onboarding_me.CategoryTool ct
-    left join Tool t on t.category_id = ct.id
-    WHERE ct.id= {category_tool_id}
+    LEFT JOIN Tool t ON t.category_id = ct.id
+    LEFT JOIN Game g ON g.id = t.game_id 
+    LEFT JOIN GamifiedJourney gj ON gj.id = g.gamified_journey_id 
+    LEFT JOIN Company c ON c.id = gj.company_id 
+    WHERE ct.id = {category_tool_id} and c.id = {company_id}
     ;
     """
     
@@ -267,11 +270,11 @@ def delete_linked_tool(list_tools: list) :
         return True
         
 
-def delete_category_tool(category_tool_id: int):
+def delete_category_tool(category_tool_id: int, company_id: int):
     
     connection, cursor = connect_database()
     
-    list_tools_id = select_all_tools_by_category_id(category_tool_id)
+    list_tools_id = select_all_tools_by_category_id(category_tool_id, company_id)
     
     if not list_tools_id: 
         return False
@@ -286,7 +289,6 @@ def delete_category_tool(category_tool_id: int):
     
     if not tools_deleted: 
         return False
-    
             
     query = f"""
     DELETE FROM CategoryTool

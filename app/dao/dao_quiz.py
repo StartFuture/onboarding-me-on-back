@@ -10,7 +10,7 @@ def select_quiz(company_id: int = None):
     if company_id:
 
         query = f"""
-        SELECT q.link_video, q.title, q.score, q.quiz_type, q.question, q.game_id FROM Quiz q
+        SELECT q.* FROM Quiz q
         left join Game g on g.id = q.game_id 
         left join GamifiedJourney gj on gj.id = g.gamified_journey_id 
         left join Company c on c.id = gj.company_id 
@@ -261,6 +261,7 @@ def update_quiz(quiz: Quiz):
 
         return True
 
+
 def delete_linked_quiz(alternative_id: int):
     
     connection, cursor = connect_database()
@@ -333,7 +334,7 @@ def delete_quiz_alternative(quiz_id: int, game_id: int):
 
     return True
 
-
+  
 def delete_alternative(alternatives: list, quiz_id: int, connection = None, cursor = None):
    
     placeholder = ','.join(['%s'] * len(alternatives))
