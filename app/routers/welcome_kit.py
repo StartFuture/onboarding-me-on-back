@@ -45,10 +45,9 @@ def get_welcome_kit_name(employee_id: int):
     
     if not wk_name and wk_image:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "Image not found!"})
-    
+  
     
     return JSONResponse(status_code=status.HTTP_200_OK, content={"name": wk_name})
-  
  
     
 @router.post("/register/welcomekit")
@@ -65,9 +64,9 @@ async def register_welcome_kit(name: str, image: UploadFile = File(...)):
         return JSONResponse(status_code=status.HTTP_200_OK, content={"msg": "Successfully registered"})
     else:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={"msg": "The welcome kit has not been registered"})
-    
-    
-@router.get("/welcomekit-item-namean")    
+
+        
+@router.get("/welcomekit-item-name")    
 def get_welcome_kit_item(welcome_kit_id: int, item_id: int):
     
     welcome_kit_exists = dao.verify_if_welcome_kit_exists(welcome_kit_id=welcome_kit_id)

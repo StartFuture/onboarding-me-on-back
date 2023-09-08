@@ -8,7 +8,6 @@ from app.routers.gamified_journey import router as router_gamified_journey
 from app.routers.welcome_kit import router as router_welcome_kit
 
 
-
 app = FastAPI()
 
 

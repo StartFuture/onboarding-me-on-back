@@ -347,6 +347,7 @@ async def update_welcome_kit_item(kit_id: int, kit_item_name: str, welcome_kit_i
     
     image_data = await welcome_kit_item_image.read()
     
+    
     query = """
     UPDATE onboarding_me.WelcomeKitItem
     SET 

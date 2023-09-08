@@ -20,6 +20,10 @@ def verify_is_allowed_file(filename):
 def generate_image(image):
         yield image
 
+def generate_image(image):
+        yield image
+
+
 def send_email(employee_email, email_body, email_subject):
     
     msg = email.message.Message()
