@@ -10,7 +10,7 @@ def select_quiz(company_id: int = None):
     if company_id:
 
         query = f"""
-        SELECT q.link_video, q.title, q.score, q.quiz_type, q.question, q.game_id FROM Quiz q
+        SELECT q.* FROM Quiz q
         left join Game g on g.id = q.game_id 
         left join GamifiedJourney gj on gj.id = g.gamified_journey_id 
         left join Company c on c.id = gj.company_id 
@@ -55,6 +55,9 @@ def select_quiz_alternatives(quiz_id: int):
         list_alternatives = cursor.fetchall()
         connection.close()
         
+        if not list_alternatives:
+            return False
+    
         return list_alternatives
     
     
@@ -258,7 +261,7 @@ def update_quiz(quiz: Quiz):
 
         return True
 
-  
+
 def delete_linked_quiz(alternative_id: int):
     
     connection, cursor = connect_database()
@@ -291,23 +294,25 @@ def delete_quiz_alternative(quiz_id: int, game_id: int):
     
     list_alternatives = select_quiz_alternatives(quiz_id)
     
-    if not list_alternatives: 
-        return False
+    if list_alternatives: 
     
-    ids = [alternative["id"] for alternative in list_alternatives]
-    
-    for id in ids:
-        linked_quiz = select_linked_quiz(id)
-    
-    deleted_linked_quiz = delete_linked_quiz(linked_quiz[0])
-    
-    if not deleted_linked_quiz:
-        return False
-    
-    deleted_alternative = delete_alternative(connection=connection, cursor=cursor, alternatives=ids, quiz_id=quiz_id)
-    
-    if not deleted_alternative:
-        return False
+        ids = [alternative["id"] for alternative in list_alternatives]
+        
+        for id in ids:
+            linked_quiz = select_linked_quiz(id)
+            
+        if linked_quiz:
+        
+            deleted_linked_quiz = delete_linked_quiz(linked_quiz[0])
+            
+            if not deleted_linked_quiz:
+                return False
+        
+        deleted_alternative = delete_alternative(connection=connection, cursor=cursor, alternatives=ids, quiz_id=quiz_id)
+        
+        if not deleted_alternative:
+            return False
+        
         
     query = f"""
     DELETE FROM Quiz 
@@ -329,6 +334,7 @@ def delete_quiz_alternative(quiz_id: int, game_id: int):
 
     return True
 
+  
 def delete_alternative(alternatives: list, quiz_id: int, connection = None, cursor = None):
    
     placeholder = ','.join(['%s'] * len(alternatives))
