@@ -124,14 +124,14 @@ def modify_category_tool(category_tool: CategoryTool):
     
     
 @router.delete("/category/delete")
-def del_category_tool(category_tool_id: int):
+def del_category_tool(category_tool_id: int, company_id: int):
     
     category_exists = dao.verify_if_category_exists(category_id=category_tool_id)
     
     if not category_exists:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={"msg": "The category dont exists!"})
     
-    category_deleted = dao.delete_category_tool(category_tool_id=category_tool_id)
+    category_deleted = dao.delete_category_tool(category_tool_id=category_tool_id, company_id=company_id)
 
     if category_deleted:
         return JSONResponse(status_code=status.HTTP_200_OK, content={"msg": "The category has been deleted!"})
