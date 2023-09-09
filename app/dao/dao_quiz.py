@@ -533,3 +533,32 @@ def verify_if_alternative_id_exists(alternative_list: list, quiz_id: int):
         connection.close()
 
         return alternative_id_exists
+    
+
+def select_quiz_game_id(company_id: int = None):
+
+    connection, cursor = connect_database()
+
+    if company_id:
+
+        query = f"""
+        SELECT g.id FROM Game g
+        left join GamifiedJourney gj on gj.id = g.gamified_journey_id 
+        left join Company c on c.id = gj.company_id 
+        WHERE
+        c.id = {company_id} AND g.name = 'quiz' 
+        ;
+        """
+
+    try:
+        cursor.execute(query)
+
+    except Exception as error:
+        connection.close()
+        return False
+
+    else:
+         game = cursor.fetchall()
+         connection.close()
+
+         return game[0]
