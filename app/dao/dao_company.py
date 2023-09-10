@@ -1,5 +1,3 @@
-from io import BytesIO, StringIO
-
 from app.dao.dao import connect_database
 from app.schemas.company import Company
 
@@ -9,7 +7,7 @@ def select_company(company_id: int):
     connection, cursor = connect_database()
     
     query = f"""
-    SELECT c.company_name, c.trading_name, c.cnpj, c.company_password, c.state_register 
+    SELECT *
     from Company c 
     WHERE id = {company_id}
     ;
@@ -25,6 +23,9 @@ def select_company(company_id: int):
     else:
         company = cursor.fetchone()
         connection.close()
+        
+        if company:
+            company['logo'] = company['logo'].decode('utf-8')
         
         return company
 
