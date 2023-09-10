@@ -161,3 +161,14 @@ def return_next_quiz(employee_id: int, company_id: int):
         next_quiz = dao.select_next_quiz(quiz_id)
 
         return JSONResponse(status_code=status.HTTP_200_OK, content={"msg": "Next quiz", "next_quiz" : next_quiz})
+    
+
+@router.get("/game_id")
+def get_quiz_game_id(company_id: int):
+    
+    game = dao.select_quiz_game_id(company_id=company_id)
+    
+    if game: 
+        return JSONResponse(status_code=status.HTTP_200_OK, content=game)
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "This game doesn't exist!"})
