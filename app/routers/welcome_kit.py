@@ -14,7 +14,7 @@ router = APIRouter(
 
 
 @router.get("/welcomekit")
-def get_welcome_kit_name(employee_id: int):
+def get_welcome_kit(employee_id: int):
     
     welcome_kit_exists = dao.verify_if_welcome_kit_exists(employee_id=employee_id)
     
@@ -37,7 +37,7 @@ def get_welcome_kit_item(welcome_kit_id: int, item_id: int):
     if not welcome_kit_exists:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"msg": "This welcome kit does not exists!!"})
     
-    welcome_kit_item= dao.select_welcome_kit_item_image(welcome_kit_id, item_id)
+    welcome_kit_item= dao.select_welcome_kit_item(welcome_kit_id, item_id)
     
     if not welcome_kit_item:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "Welcome kit item not found"})

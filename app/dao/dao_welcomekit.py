@@ -26,10 +26,13 @@ def select_welcome_kit(employee_id: int):
         welcome_kit = cursor.fetchone()
         connection.close()
         
+        if welcome_kit:
+            welcome_kit['image'] = welcome_kit['image'].decode('utf-8')
+        
         return welcome_kit
     
     
-def select_welcome_kit_item_image(welcome_kit_id: int, item_id: int):
+def select_welcome_kit_item(welcome_kit_id: int, item_id: int):
     
     connection, cursor  = connect_database()
     
@@ -50,10 +53,13 @@ def select_welcome_kit_item_image(welcome_kit_id: int, item_id: int):
     
     else:
         
-        welcome_kit_item_image = cursor.fetchone()
+        welcome_kit_item= cursor.fetchone()
         connection.close()
         
-        return welcome_kit_item_image
+        if welcome_kit_item:
+            welcome_kit_item['image'] = welcome_kit_item['image'].decode('utf-8')
+        
+        return welcome_kit_item
     
 
 async def insert_welcome_kit(welcome_kit_name: str = None, welcome_kit_image: str = None, kit_item_name: str = None, kit_item_image: str = None):    
