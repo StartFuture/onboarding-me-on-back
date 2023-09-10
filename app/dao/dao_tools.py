@@ -43,7 +43,8 @@ def insert_tool(tool: Tool):
     INSERT INTO Tool 
     (link_download, name, score, game_id, category_id)
     VALUES
-    ('{tool.link_download}', '{tool.name}', {tool.score}, {tool.game_id}, {tool.category_id});
+    ('{tool.link_download}', '{tool.name}', {tool.score}, {tool.game_id}, {tool.category_id})
+    ;
     """
     try:
         cursor.execute(query)
