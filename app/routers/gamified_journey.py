@@ -4,7 +4,6 @@ from fastapi.responses import JSONResponse
 from app.dao.dao_gamified_journey import insert_video_company, select_video_company, modify_video_company, delete_video
 from app.dao.dao_company import select_company
 from app.schemas.gamified_journey import GamifiedJourney 
-from fastapi import APIRouter
 
 
 router = APIRouter(
@@ -16,7 +15,7 @@ router = APIRouter(
 )
 
 
-@router.get("/get-video/{company_id}")
+@router.get("/get-video/")
 def get_video_company(company_id: int):
     
     company = select_company(company_id)

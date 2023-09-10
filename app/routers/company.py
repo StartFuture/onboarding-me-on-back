@@ -1,4 +1,3 @@
-import io
 from fastapi import APIRouter, status, HTTPException
 from fastapi.responses import JSONResponse, StreamingResponse
 from passlib.context import CryptContext

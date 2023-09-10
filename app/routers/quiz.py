@@ -1,10 +1,8 @@
 from fastapi import APIRouter,status, HTTPException
 from fastapi.responses import JSONResponse
-from typing import List
 
 from app.dao import dao_quiz as dao
 from app.dao import dao_employee
-from app.dao import dao_company
 from app.schemas.quiz import Quiz
 
 
@@ -143,7 +141,7 @@ def del_alternative(alternative_id: int, quiz_id: int):
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={"msg": "The alternative has not been deleted!"})
 
 
-@router.get("/next/{employee_id}")
+@router.get("/next-quiz/")
 def return_next_quiz(employee_id: int, company_id: int):
 
     employee_exists = dao_employee.verify_employee_exists(employee_id, company_id)
