@@ -1,5 +1,3 @@
-from io import BytesIO, StringIO
-
 from app.dao.dao import connect_database
 from app.schemas.company import Company
 
@@ -8,14 +6,12 @@ def select_company(company_id: int):
     
     connection, cursor = connect_database()
     
-        
     query = f"""
-    SELECT c.company_name, c.trading_name, c.cnpj, c.company_password, c.state_register 
+    SELECT *
     from Company c 
     WHERE id = {company_id}
     ;
     """
-
 
     try:
         cursor.execute(query)
@@ -27,6 +23,9 @@ def select_company(company_id: int):
     else:
         company = cursor.fetchone()
         connection.close()
+        
+        if company:
+            company['logo'] = company['logo'].decode('utf-8')
         
         return company
 
@@ -61,11 +60,9 @@ def get_company_id(quiz_id: int = None, tool_id: int = None):
         return company_id["id"]
     
 
-async def insert_company(company: Company):
+def insert_company(company: Company):
     
     connection, cursor = connect_database()
-    
-    company_image = str.encode(company.logo)
     
     query ="""
     INSERT INTO Company
@@ -74,7 +71,7 @@ async def insert_company(company: Company):
     (%s, %s, %s, %s, %s, %s, %s);
     """
     
-    params = (company.name, company.trading_name, company_image, company.cnpj, company.email, company.password, company.state_register)
+    params = (company.name, company.trading_name, company.logo, company.cnpj, company.email, company.password, company.state_register)
     
     try:
         cursor.execute(query, params)
@@ -86,10 +83,57 @@ async def insert_company(company: Company):
     else:
         connection.commit()
         connection.close()
-        
         return True
     
+    
+def update_company(company: Company):
+    
+    connection, cursor = connect_database()
+    
+    query ="""
+    UPDATE onboarding_me.Company
+    SET company_name = %s, trading_name = %s, logo = %s, cnpj = %s, email= %s, company_password = %s, state_register = %s
+    WHERE id= %s
+    ;
+    """
+    
+    params = (company.name, company.trading_name, company.logo, company.cnpj, company.email, company.password, company.state_register, company.company_id)
+    
+    try:
+        cursor.execute(query, params)
 
+    except Exception as error:
+        connection.close()
+        return False
+
+    else:
+        connection.commit()
+        connection.close()
+        return True
+    
+    
+def delete_company(company_id: int):
+    
+    connection, cursor = connect_database()
+    
+    query = f"""
+    DELETE FROM onboarding_me.Company
+    WHERE id = {company_id};
+    """
+    
+    try:
+        cursor.execute(query)
+        
+    except:
+        connection.close()
+        return False
+    else:
+        connection.commit()
+        connection.close()
+        
+        return True    
+    
+    
 def verify_company_exists_by_email(company_email: str):
     
     connection, cursor = connect_database()

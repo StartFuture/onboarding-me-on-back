@@ -35,6 +35,7 @@ def get_feedback_employee(company_id : int):
     else:
         raise HTTPException (status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "This company don't have feedbacks"})
 
+
 @router.get("/score")
 def get_final_score(employee_id: int, game_id: int, company_id):
     
@@ -54,7 +55,6 @@ def get_final_score(employee_id: int, game_id: int, company_id):
         return JSONResponse(status_code=status.HTTP_200_OK, content=total_score)
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "Employee score not encountered!"})   
-    
     
 
 @router.post("/register/score") 

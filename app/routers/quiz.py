@@ -87,7 +87,6 @@ def modify_quiz(quiz: Quiz, company_id: int):
     
     if quiz_modified:
         alternative_modified = dao.update_alternative(quiz.alternatives, quiz.quiz_id)
-    
     else:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"msg": "ERROR!"})
         
