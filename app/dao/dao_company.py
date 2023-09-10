@@ -61,11 +61,9 @@ def get_company_id(quiz_id: int = None, tool_id: int = None):
         return company_id["id"]
     
 
-async def insert_company(company: Company):
+def insert_company(company: Company):
     
     connection, cursor = connect_database()
-    
-    company_image = str.encode(company.logo)
     
     query ="""
     INSERT INTO Company
@@ -74,7 +72,7 @@ async def insert_company(company: Company):
     (%s, %s, %s, %s, %s, %s, %s);
     """
     
-    params = (company.name, company.trading_name, company_image, company.cnpj, company.email, company.password, company.state_register)
+    params = (company.name, company.trading_name, company.logo, company.cnpj, company.email, company.password, company.state_register)
     
     try:
         cursor.execute(query, params)
@@ -86,8 +84,16 @@ async def insert_company(company: Company):
     else:
         connection.commit()
         connection.close()
-        
         return True
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
 
 def verify_company_exists_by_email(company_email: str):

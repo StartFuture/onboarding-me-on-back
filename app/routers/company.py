@@ -33,7 +33,7 @@ def get_company(company_id: int):
     
 
 @router.post("/register")
-async def create_company(company: Company):
+def create_company(company: Company):
     
     company_exists = dao.verify_company_exists_by_email(company.email)
     
@@ -42,7 +42,7 @@ async def create_company(company: Company):
     
     company.password = crypt_context.hash(company.password)
     
-    company_registered = await dao.insert_company(company)
+    company_registered = dao.insert_company(company)
     
     if company_registered:
         return JSONResponse(status_code=status.HTTP_201_CREATED, content={"msg": "Successfully created"})
