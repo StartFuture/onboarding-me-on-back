@@ -1,5 +1,4 @@
 from app.dao.dao import connect_database
-from fastapi import UploadFile
 
 
 def select_welcome_kit(employee_id: int):
@@ -24,13 +23,16 @@ def select_welcome_kit(employee_id: int):
     
     else:
         
-        welcome_kit_image = cursor.fetchone()
+        welcome_kit = cursor.fetchone()
         connection.close()
         
-        return welcome_kit_image['name'], welcome_kit_image['image']
+        if welcome_kit:
+            welcome_kit['image'] = welcome_kit['image'].decode('utf-8')
+        
+        return welcome_kit
     
     
-def select_welcome_kit_item_image(welcome_kit_id: int, item_id: int):
+def select_welcome_kit_item(welcome_kit_id: int, item_id: int):
     
     connection, cursor  = connect_database()
     
@@ -51,13 +53,16 @@ def select_welcome_kit_item_image(welcome_kit_id: int, item_id: int):
     
     else:
         
-        welcome_kit_item_image = cursor.fetchone()
+        welcome_kit_item= cursor.fetchone()
         connection.close()
         
-        return welcome_kit_item_image['name'], welcome_kit_item_image['image']
+        if welcome_kit_item:
+            welcome_kit_item['image'] = welcome_kit_item['image'].decode('utf-8')
+        
+        return welcome_kit_item
     
 
-async def insert_welcome_kit(welcome_kit_name: str = None, welcome_kit_image: UploadFile = None, kit_item_name: str = None, kit_item_image: UploadFile = None):    
+async def insert_welcome_kit(welcome_kit_name: str = None, welcome_kit_image: str = None, kit_item_name: str = None, kit_item_image: str = None):    
 
     connection, cursor  = connect_database()
     
@@ -69,8 +74,9 @@ async def insert_welcome_kit(welcome_kit_name: str = None, welcome_kit_image: Up
         VALUES 
         (%s, %s);
         """
-        image_data = await welcome_kit_image.read()
+        
         name = welcome_kit_name
+        image = welcome_kit_image
         
     if kit_item_name and kit_item_image:
         
@@ -82,12 +88,11 @@ async def insert_welcome_kit(welcome_kit_name: str = None, welcome_kit_image: Up
         ;
         """
 
-        image_data = await kit_item_image.read()
         name = kit_item_name
-    
+        image = kit_item_image
     
     try:
-       cursor.execute(query, (name, image_data))
+       cursor.execute(query, (name, image))
         
     except Exception as error:
         connection.close()
@@ -298,11 +303,9 @@ def delete_welcome_kit(welcome_kit_id: int):
         return True   
     
     
-async def update_welcome_kit(welcome_kit_id: int, welcome_kit_name: str, welcome_kit_image: UploadFile):
+async def update_welcome_kit(welcome_kit_id: int, welcome_kit_name: str, welcome_kit_image: str):
     
     connection, cursor = connect_database()
-    
-    image_data = await welcome_kit_image.read()
     
     query = """
     UPDATE WelcomeKit
@@ -313,7 +316,7 @@ async def update_welcome_kit(welcome_kit_id: int, welcome_kit_name: str, welcome
     ;
     """
 
-    params = (welcome_kit_name, image_data, welcome_kit_id)
+    params = (welcome_kit_name, welcome_kit_image, welcome_kit_id)
     
     try:
         cursor.execute(query, params)
@@ -341,12 +344,9 @@ async def update_welcome_kit(welcome_kit_id: int, welcome_kit_name: str, welcome
         return True
 
 
-async def update_welcome_kit_item(kit_id: int, kit_item_name: str, welcome_kit_item_image: UploadFile):
+async def update_welcome_kit_item(kit_id: int, kit_item_name: str, welcome_kit_item_image: str):
     
     connection, cursor = connect_database()
-    
-    image_data = await welcome_kit_item_image.read()
-    
     
     query = """
     UPDATE onboarding_me.WelcomeKitItem
@@ -357,7 +357,7 @@ async def update_welcome_kit_item(kit_id: int, kit_item_name: str, welcome_kit_i
     ;
     """
     
-    params = (kit_item_name, image_data, kit_id)
+    params = (kit_item_name, welcome_kit_item_image, kit_id)
 
     try:
         cursor.execute(query, params)

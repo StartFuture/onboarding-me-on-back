@@ -1,11 +1,10 @@
+from fastapi import APIRouter,status, HTTPException
+from fastapi.responses import JSONResponse
+
 from app.dao import dao_tools as dao
 from app.dao import dao_company
 from app.schemas.category_tool import CategoryTool
 from app.schemas.tool import Tool, EmployeeTool
-
-from fastapi import APIRouter,status, HTTPException
-from fastapi.responses import JSONResponse
-
 from app import utils
 
 
@@ -16,7 +15,7 @@ router = APIRouter(
     ]
         )
 
-@router.get("/{company_id}")
+@router.get("/")
 def get_tools(company_id: int):
     
     company_exists = dao_company.verify_if_company_exists(company_id)

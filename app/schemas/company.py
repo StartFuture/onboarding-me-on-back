@@ -1,5 +1,4 @@
 from pydantic import BaseModel, Field
-from fastapi import UploadFile, File
 
 from app import parameters
 
