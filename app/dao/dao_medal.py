@@ -23,7 +23,8 @@ def select_medal(medal_id, game_id: int):
         medal_data = cursor.fetchone()
         connection.close()
         
-        medal_data["image"] = medal_data["image"].decode('utf-8')
+        if medal_data:
+            medal_data["image"] = medal_data["image"].decode('utf-8')
 
         return medal_data
     
@@ -155,5 +156,3 @@ def verify_if_medal_exists(medal_id: int):
             return True
 
         return False
-
-
