@@ -16,7 +16,7 @@ router = APIRouter(
     ]
         )
 
-@router.get("/{company_id}")
+@router.get("/")
 def get_tools(company_id: int):
     
     company_exists = dao_company.verify_if_company_exists(company_id)

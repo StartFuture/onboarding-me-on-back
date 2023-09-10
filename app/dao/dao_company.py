@@ -4,27 +4,18 @@ from app.dao.dao import connect_database
 from app.schemas.company import Company
 
 
-def select_company(company_id: int, type: str):
+def select_company(company_id: int):
     
     connection, cursor = connect_database()
     
-    if type == 'company':
         
-        query = f"""
-        SELECT c.company_name, c.trading_name, c.cnpj, c.company_password, c.state_register 
-        from Company c 
-        WHERE id = {company_id}
-        ;
-        """
+    query = f"""
+    SELECT c.company_name, c.trading_name, c.cnpj, c.company_password, c.state_register 
+    from Company c 
+    WHERE id = {company_id}
+    ;
+    """
 
-    if type == 'logo':
-        
-        query = f"""
-        SELECT c.logo 
-        from Company c 
-        WHERE id = {company_id}
-        ;
-        """
 
     try:
         cursor.execute(query)

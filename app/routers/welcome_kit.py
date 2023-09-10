@@ -1,11 +1,9 @@
+from fastapi import APIRouter, status, HTTPException
+from fastapi.responses import JSONResponse
 
 from app.dao import dao_welcomekit as dao
-from app.utils import verify_is_allowed_file, generate_image
 
-import io
-from fastapi import APIRouter, status, HTTPException
-from fastapi.responses import JSONResponse, StreamingResponse
-from fastapi import File, UploadFile
+
 
 router = APIRouter(
     prefix="/welcomekit",
@@ -15,25 +13,7 @@ router = APIRouter(
 )
 
 
-@router.get("/welcomekit-image")
-def get_welcome_kit_image(employee_id: int):
-    
-    welcome_kit_exists = dao.verify_if_welcome_kit_exists(employee_id=employee_id)
-    
-    if not welcome_kit_exists:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"msg": "This welcome kit does not exists!"})
-    
-    wk_name, wk_image = dao.select_welcome_kit(employee_id)
-    
-    if not wk_name and wk_image:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "Image not found!"})
-    
-    generate_image(wk_image)
-    
-    return StreamingResponse(io.BytesIO(wk_image), media_type="image/png")
-    
-    
-@router.get("/welcomekit-name")
+@router.get("/welcomekit")
 def get_welcome_kit_name(employee_id: int):
     
     welcome_kit_exists = dao.verify_if_welcome_kit_exists(employee_id=employee_id)
@@ -41,31 +21,14 @@ def get_welcome_kit_name(employee_id: int):
     if not welcome_kit_exists:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"msg": "This welcome kit does not exists!"})
     
-    wk_name, wk_image = dao.select_welcome_kit(employee_id)
+    welcome_kit= dao.select_welcome_kit(employee_id)
     
-    if not wk_name and wk_image:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "Image not found!"})
+    if not welcome_kit:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "welcome kit not found!"})
   
-    
-    return JSONResponse(status_code=status.HTTP_200_OK, content={"name": wk_name})
+    return JSONResponse(status_code=status.HTTP_200_OK, content=welcome_kit)
  
     
-@router.post("/register/welcomekit")
-async def register_welcome_kit(name: str, image: UploadFile = File(...)):
-    
-    is_allowed_file = verify_is_allowed_file(image.filename)
-    
-    if not is_allowed_file:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT , detail={"msg": "This format file is not permited!"})
-    
-    welcome_kit_registered = await dao.insert_welcome_kit(welcome_kit_name=name, welcome_kit_image=image)
-    
-    if welcome_kit_registered:
-        return JSONResponse(status_code=status.HTTP_200_OK, content={"msg": "Successfully registered"})
-    else:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={"msg": "The welcome kit has not been registered"})
-
-        
 @router.get("/welcomekit-item-name")    
 def get_welcome_kit_item(welcome_kit_id: int, item_id: int):
     
@@ -74,40 +37,27 @@ def get_welcome_kit_item(welcome_kit_id: int, item_id: int):
     if not welcome_kit_exists:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"msg": "This welcome kit does not exists!!"})
     
-    wki_name, wki_image = dao.select_welcome_kit_item_image(welcome_kit_id, item_id)
+    welcome_kit_item= dao.select_welcome_kit_item_image(welcome_kit_id, item_id)
     
-    if not wki_name and wki_image:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "Welcome kit item not encountered"})
+    if not welcome_kit_item:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "Welcome kit item not found"})
     
-    return JSONResponse(status_code=status.HTTP_200_OK, content={"name": wki_name})
+    return JSONResponse(status_code=status.HTTP_200_OK, content=welcome_kit_item)
 
 
-@router.get("/welcomekit-item-image")    
-def get_welcome_kit_item_image(welcome_kit_id: int, item_id: int):
+@router.post("/register/welcomekit")
+async def register_welcome_kit(name: str, image: str):
     
-    welcome_kit_exists = dao.verify_if_welcome_kit_exists(welcome_kit_id=welcome_kit_id)
+    welcome_kit_registered = await dao.insert_welcome_kit(welcome_kit_name=name, welcome_kit_image=image)
     
-    if not welcome_kit_exists:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"msg": "This welcome kit does not exists!!"})
-    
-    wki_name, wki_image = dao.select_welcome_kit_item_image(welcome_kit_id, item_id)
-    
-    if not wki_name and wki_image:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "Welcome kit item not encountered"})
-    
-    
-    generate_image(wki_image)
-    
-    return StreamingResponse(io.BytesIO(wki_image), media_type="image/png")
-    
-    
+    if welcome_kit_registered:
+        return JSONResponse(status_code=status.HTTP_200_OK, content={"msg": "Successfully registered"})
+    else:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={"msg": "The welcome kit has not been registered"})
+
+
 @router.post("/register/welcomekit-item")
-async def register_welcome_kit_item(welcome_kit_id: int, item_name: str, item_image: UploadFile = File(...)):
-    
-    is_allowed_file = verify_is_allowed_file(item_image.filename)
-    
-    if not is_allowed_file:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT , detail={"msg": "This format file is not permited!"})
+async def register_welcome_kit_item(welcome_kit_id: int, item_name: str, item_image: str):
     
     item_id = await dao.insert_welcome_kit(kit_item_name=item_name, kit_item_image=item_image)
     
@@ -130,9 +80,7 @@ def delete_welcomekit(welcome_kit_id: int):
     if not welcome_kit_exists:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"msg": "This welcome kit does not exists!!"})
     
-    
     welcome_kit_deleted = dao.delete_welcome_kit(welcome_kit_id)
-    
     
     if welcome_kit_deleted:
         return JSONResponse(status_code=status.HTTP_200_OK, content={"msg": "The welcome kit has been deleted!"})
@@ -169,7 +117,7 @@ def delete_welcomekit_item(welcome_kit_id: int, item_id: int):
 
 
 @router.put("/update")
-async def modify_welcome_kit(welcome_kit_id: int, welcome_kit_name: str, image: UploadFile = File(...)):
+async def modify_welcome_kit(welcome_kit_id: int, welcome_kit_name: str, image: str):
     
     welcome_kit_exists = dao.verify_if_welcome_kit_exists(welcome_kit_id=welcome_kit_id)
     
@@ -185,7 +133,7 @@ async def modify_welcome_kit(welcome_kit_id: int, welcome_kit_name: str, image: 
         
 
 @router.put("/update/welcome-kit-item")
-async def modify_welcome_kit_item(kit_item_id: int, kit_item_name: str, image: UploadFile = File(...)):
+async def modify_welcome_kit_item(kit_item_id: int, kit_item_name: str, image: str):
 
     welcome_kit_item_exists = dao.verify_if_welcome_kit_item_exists(kit_item_id)
     
