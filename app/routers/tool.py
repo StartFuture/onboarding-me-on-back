@@ -1,11 +1,10 @@
+from fastapi import APIRouter,status, HTTPException
+from fastapi.responses import JSONResponse
+
 from app.dao import dao_tools as dao
 from app.dao import dao_company
 from app.schemas.category_tool import CategoryTool
 from app.schemas.tool import Tool, EmployeeTool
-
-from fastapi import APIRouter,status, HTTPException
-from fastapi.responses import JSONResponse
-
 from app import utils
 
 
@@ -16,7 +15,7 @@ router = APIRouter(
     ]
         )
 
-@router.get("/{company_id}")
+@router.get("/")
 def get_tools(company_id: int):
     
     company_exists = dao_company.verify_if_company_exists(company_id)
@@ -124,14 +123,14 @@ def modify_category_tool(category_tool: CategoryTool):
     
     
 @router.delete("/category/delete")
-def del_category_tool(category_tool_id: int):
+def del_category_tool(category_tool_id: int, company_id: int):
     
     category_exists = dao.verify_if_category_exists(category_id=category_tool_id)
     
     if not category_exists:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={"msg": "The category dont exists!"})
     
-    category_deleted = dao.delete_category_tool(category_tool_id=category_tool_id)
+    category_deleted = dao.delete_category_tool(category_tool_id=category_tool_id, company_id=company_id)
 
     if category_deleted:
         return JSONResponse(status_code=status.HTTP_200_OK, content={"msg": "The category has been deleted!"})

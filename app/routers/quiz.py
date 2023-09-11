@@ -1,10 +1,8 @@
 from fastapi import APIRouter,status, HTTPException
 from fastapi.responses import JSONResponse
-from typing import List
 
 from app.dao import dao_quiz as dao
 from app.dao import dao_employee
-from app.dao import dao_company
 from app.schemas.quiz import Quiz
 
 
@@ -39,7 +37,6 @@ def register_quiz(quiz: Quiz):
     
 
     id_quiz = dao.insert_quiz(quiz)
-    
     
     
     alternative_registered = dao.insert_alternatives(quiz.alternatives, id_quiz['id_quiz'])
@@ -90,7 +87,6 @@ def modify_quiz(quiz: Quiz, company_id: int):
     
     if quiz_modified:
         alternative_modified = dao.update_alternative(quiz.alternatives, quiz.quiz_id)
-    
     else:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"msg": "ERROR!"})
         
@@ -144,7 +140,7 @@ def del_alternative(alternative_id: int, quiz_id: int):
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={"msg": "The alternative has not been deleted!"})
 
 
-@router.get("/next/{employee_id}")
+@router.get("/next-quiz/")
 def return_next_quiz(employee_id: int, company_id: int):
 
     employee_exists = dao_employee.verify_employee_exists(employee_id, company_id)
@@ -165,3 +161,14 @@ def return_next_quiz(employee_id: int, company_id: int):
         next_quiz = dao.select_next_quiz(quiz_id)
 
         return JSONResponse(status_code=status.HTTP_200_OK, content={"msg": "Next quiz", "next_quiz" : next_quiz})
+    
+
+@router.get("/game_id")
+def get_quiz_game_id(company_id: int):
+    
+    game = dao.select_quiz_game_id(company_id=company_id)
+    
+    if game: 
+        return JSONResponse(status_code=status.HTTP_200_OK, content=game)
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "This game doesn't exist!"})

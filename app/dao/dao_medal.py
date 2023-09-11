@@ -1,108 +1,158 @@
 from app.dao.dao import connect_database
 
-def select_medal(medal_id: int):
-    
+
+def select_medal(medal_id, game_id: int):
+
     connection, cursor = connect_database()
-    
+
     query = f"""
-    SELECT name, image, medal_id from Medal_Score
-	WHERE medal_id = '{medal_id}';
+    SELECT name, image, game_id
+    FROM onboarding_me.Medal
+    WHERE id = {medal_id} and game_id = {game_id}
+    ;
     """
 
     try:
         cursor.execute(query)
-    except:
-        medal = None
-    else:
-        medal = cursor.fetchone()
-    finally:
-        connection.commit()
+        
+    except Exception as error:
         connection.close()
-
-    return medal
-
-def insert_medal(medal_id: int, score_id: int):
+        return None
     
+    else:
+        medal_data = cursor.fetchone()
+        connection.close()
+        
+        if medal_data:
+            medal_data["image"] = medal_data["image"].decode('utf-8')
+
+        return medal_data
+    
+    
+def insert_medal(name, image: str, game_id: int):
+
     connection, cursor = connect_database()
-    
+
     query = f"""
-    INSERT INTO Medal_Score(medal_id, score_id) VALUES ('{medal_id}','{score_id}');
+    INSERT INTO onboarding_me.Medal
+    (name, image, game_id)
+    VALUES
+    ('{name}', '{image}', '{game_id}')
+    ;
     """
-    
     try:
         cursor.execute(query)
     except Exception as error:
+        connection.close()
         return False
-    finally:
+    else:
         connection.commit()
         connection.close()
 
-    return True
-
-
-def select_medal_by_employee(employee_id: int):
+        return True
     
+    
+def update_medal(medal_id: int, name, image: str):
+
+    connection, cursor = connect_database()
+
+    query = f"""
+    UPDATE onboarding_me.Medal
+    SET name = '{name}', image = '{image}'
+    WHERE id = {medal_id}
+    ;
+    """
+    
+    try:
+        cursor.execute(query)
+        
+    except Exception as error:
+        connection.close()
+        return False
+    
+    else:
+        connection.commit()
+        connection.close()
+
+        return True   
+    
+    
+def delete_linked_medal(medal_id: int):
+
+    connection, cursor = connect_database()
+
+    query = f"""
+    DELETE FROM onboarding_me.Medal_Score
+    WHERE medal_id = {medal_id}
+    ;
+    """
+    
+    try:
+        cursor.execute(query)
+        
+    except Exception as error:
+        connection.close()
+        return False
+    
+    else:
+        connection.commit()
+        connection.close()
+
+        return True
+    
+    
+def delete_medal(medal_id: int):
+
     connection, cursor = connect_database()
     
+    medal_linked_deleted = delete_linked_medal(medal_id)
+    
+    if not medal_linked_deleted:
+        return False
+    
     query = f"""
-    SELECT ms.medal_id from Score s 
-    left join Medal_Score ms on s.id = ms.score_id 
-    WHERE s.employee_id = {employee_id}
+    DELETE FROM onboarding_me.Medal
+    WHERE id = {medal_id}
+    ;
+    """
+    
+    try:
+        cursor.execute(query)
+        
+    except Exception as error:
+        connection.close()
+        return False
+    
+    else:
+        connection.commit()
+        connection.close()
+
+        return True
+ 
+ 
+def verify_if_medal_exists(medal_id: int):
+
+    connection, cursor = connect_database()
+
+    query = f"""
+    SELECT name
+    FROM onboarding_me.Medal
+    WHERE id = {medal_id}
     ;
     """
 
     try:
         cursor.execute(query)
-    except:
-        medal = None
-    else:
-        medal = cursor.fetchone()
-    finally:
-        connection.commit()
+        
+    except Exception as error:
         connection.close()
-
-    return medal
-
-def select_score_by_employee(employee_id: int):
+        return None
     
-    connection, cursor = connect_database()
-    
-    query = f"""
-    SELECT id from Score  
-    WHERE employee_id = {employee_id}
-    ;
-    """
-
-    try:
-        cursor.execute(query)
-    except:
-        score_id = None
     else:
-        score_id = cursor.fetchone()
-    finally:
-        connection.commit()
+        medal_exists = cursor.fetchone()
         connection.close()
+        
+        if medal_exists:
+            return True
 
-    return score_id
-
-def select_medal_by_game(game_id: int):
-    
-    connection, cursor = connect_database()
-    
-    query = f"""
-    SELECT id from Medal m 
-    WHERE game_id = {game_id}
-    ;
-    """
-
-    try:
-        cursor.execute(query)
-    except:
-        medal_id = None
-    else:
-        medal_id = cursor.fetchone()
-    finally:
-        connection.commit()
-        connection.close()
-
-    return medal_id
+        return False

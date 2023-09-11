@@ -12,13 +12,6 @@ def string_to_lower(name: str):
 def fix_video_link(link_video: str):
     link_fixed = link_video.replace("watch?v=", "embed/")
     return link_fixed
-    
-
-def verify_is_allowed_file(filename):
-    return re.search(dict_regex["allowed image extensions"] + '$', filename) is not None
-
-def generate_image(image):
-        yield image
 
 def send_email(employee_email, email_body, email_subject):
     

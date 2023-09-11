@@ -48,10 +48,32 @@ def modify_video_company(company_id: int, new_link: str):
     connection, cursor = connect_database()
     
     query = f"""
-    UPDATE GamifiedJourney(welcome_video_link, company_id)
+    UPDATE GamifiedJourney
 	set welcome_video_link = '{new_link}'
 	WHERE company_id = '{company_id}';
     """
+    
+    try:
+        cursor.execute(query)
+    except:
+        return None
+    finally:
+        connection.commit()
+        connection.close()
+        
+        return True
+
+
+def delete_video(company_id: int):
+    
+    connection, cursor = connect_database()
+    
+    query = f"""
+    UPDATE GamifiedJourney
+	set welcome_video_link = ''
+	WHERE company_id = '{company_id}';
+    """
+    
     
     try:
         cursor.execute(query)
