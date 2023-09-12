@@ -262,7 +262,6 @@ def get_medal_score(employee_id: int, game_id: int):
 
 def get_employee_medals(employee_id: int, game_id: int):
     
-    
     connection, cursor = connect_database()
 
     medals_list = get_medal_score(employee_id=employee_id, game_id=game_id)

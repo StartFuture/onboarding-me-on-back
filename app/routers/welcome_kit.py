@@ -46,9 +46,9 @@ def get_welcome_kit_item(welcome_kit_id: int, item_id: int):
 
 
 @router.post("/register/welcomekit")
-async def register_welcome_kit(name: str, image: str):
+async def register_welcome_kit(name: str, image: str, employee_id: int):
     
-    welcome_kit_registered = await dao.insert_welcome_kit(welcome_kit_name=name, welcome_kit_image=image)
+    welcome_kit_registered = await dao.insert_welcome_kit(welcome_kit_name=name, welcome_kit_image=image, employee_id=employee_id)
     
     if welcome_kit_registered:
         return JSONResponse(status_code=status.HTTP_200_OK, content={"msg": "Successfully registered"})
