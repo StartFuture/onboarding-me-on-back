@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 
 from app.utils import validate_password
 from app.dao.dao_company import verify_company_exists_by_email
+from app.dao.dao_auth import insert_revoked_tokens
 from app.parameters import ACCESS_TOKEN_EXPIRES, ALGORITHM, SECRET_KEY
 from app.auth import verify_token
 
@@ -42,6 +43,28 @@ def login(user: OAuth2PasswordRequestForm = Depends()):
     token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
     
     return JSONResponse(status_code=status.HTTP_200_OK, content={'access_token': token})
+
+
+@router.post("/logout")
+def logout(user: dict = Depends(verify_token)):
+    
+    token = jwt.encode(user, SECRET_KEY, algorithm=ALGORITHM)
+    
+    revoked_token = insert_revoked_tokens(user_id=user['sub'], token=token)
+    
+    if revoked_token:
+        return JSONResponse(status_code=status.HTTP_200_OK, content={"msg": "The token has been revoked!"})
+    else:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"msg": "The token has not been revoked!"}) 
+    
+    
+
+    
+    
+    
+    
+    
+    
 
 
 @router.post('/token_health')

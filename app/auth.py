@@ -13,13 +13,8 @@ oauth = OAuth2PasswordBearer(tokenUrl="/auth/login")
 def verify_token(token: dict = Depends(oauth)):
     
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
         
-    except JWTError:
-        raise HTTPException(detail={'msg': 'missing token'}, 
-                             status_code=status.HTTP_401_UNAUTHORIZED)
-    
-    else:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
         
         if payload['type'] == 'company':
             verify_company = verify_token_company(token)
@@ -31,7 +26,12 @@ def verify_token(token: dict = Depends(oauth)):
         else:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={"msg": "Not authorized!"})
         
-
+        
+    except JWTError:
+        raise HTTPException(detail={'msg': 'missing token'}, 
+                             status_code=status.HTTP_401_UNAUTHORIZED)
+    
+    
 def verify_token_company(token: dict = Depends(verify_token)):
     
     try:
