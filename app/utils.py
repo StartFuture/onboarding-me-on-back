@@ -1,10 +1,17 @@
-from app.parameters import EMAIL, EMAIL_PASSWORD, congratulations_email, subject_congratulations_email
-from app.parameters import dict_regex
-
 import email
 import smtplib
-import re
+from passlib.context import CryptContext
 
+from app.parameters import EMAIL, EMAIL_PASSWORD, congratulations_email, subject_congratulations_email
+
+crypt = CryptContext(schemes=['bcrypt'])
+
+
+def create_hash(password):
+    return crypt.hash(password)
+
+def validate_password(password_hash, password):
+    return crypt.verify(password, password_hash)
 
 def string_to_lower(name: str):
     return name.lower()
@@ -28,5 +35,3 @@ def send_email(employee_email, email_body, email_subject):
         s.starttls()
         s.login(msg['From'], password)
         s.sendmail(msg['From'], [msg['To']], msg.as_string().encode('utf-8'))
-        
-    
