@@ -58,3 +58,23 @@ def update_track(status: str, tracking_code: str):
         connection.close()
 
     return True
+
+def delivered_kit(employee_id: int):
+    
+    connection, cursor = connect_database()
+    
+    query = f"""
+    UPDATE Tracking
+	set status = "delivered"
+	WHERE employee_id = '{employee_id}';
+    """
+    
+    try:
+        cursor.execute(query)
+    except Exception as error:
+        return None
+    finally:
+        connection.commit()
+        connection.close()
+
+    return True
