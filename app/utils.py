@@ -7,6 +7,7 @@ from app.parameters import EMAIL, EMAIL_PASSWORD, congratulations_email, subject
 crypt = CryptContext(schemes=['bcrypt'])
 
 
+
 def create_hash(password):
     return crypt.hash(password)
 

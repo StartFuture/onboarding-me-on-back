@@ -1,6 +1,6 @@
 from jose import jwt, JWTError
-from fastapi.security import OAuth2PasswordBearer
 from fastapi import HTTPException, status, Depends
+from fastapi.security import OAuth2PasswordBearer
 
 from app.dao import dao_auth as dao
 from app.dao.dao_company import verify_company_exists_by_email
@@ -9,6 +9,18 @@ from app.parameters import ALGORITHM, SECRET_KEY
 
 oauth = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
+
+def return_token(token: dict = Depends(oauth)):
+    
+    payload = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
+    
+    token_revoked = dao.select_revoked_token(user_id=payload['sub'], token=token)
+        
+    if token_revoked:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={"msg": "User or passwords incorrects!"})
+        
+    return token
+    
 
 def verify_token(token: dict = Depends(oauth)):
     
@@ -47,6 +59,7 @@ def verify_token_company(token: dict = Depends(verify_token)):
 
         if not company_exists:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={"msg": "User or passwords incorrects!"})
+        
         
         token_revoked = dao.select_revoked_token(user_id=payload['sub'], token=token)
         

@@ -8,7 +8,7 @@ from app.utils import validate_password
 from app.dao.dao_company import verify_company_exists_by_email
 from app.dao.dao_auth import insert_revoked_tokens
 from app.parameters import ACCESS_TOKEN_EXPIRES, ALGORITHM, SECRET_KEY
-from app.auth import verify_token
+from app.auth import verify_token, return_token
 
 
 router = APIRouter(
@@ -46,11 +46,11 @@ def login(user: OAuth2PasswordRequestForm = Depends()):
 
 
 @router.post("/logout")
-def logout(user: dict = Depends(verify_token)):
+def logout(token: str = Depends(return_token)):
     
-    token = jwt.encode(user, SECRET_KEY, algorithm=ALGORITHM)
+    payload = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
     
-    revoked_token = insert_revoked_tokens(user_id=user['sub'], token=token)
+    revoked_token = insert_revoked_tokens(user_id=payload['sub'], token=token)
     
     if revoked_token:
         return JSONResponse(status_code=status.HTTP_200_OK, content={"msg": "The token has been revoked!"})
