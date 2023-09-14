@@ -34,10 +34,8 @@ def insert_video_company(company_id: int, link: str):
     ;
     """
     try:
-        print(query)
         cursor.execute(query)
     except TypeError:
-        print(query)
         return TypeError
     finally:
         connection.commit()
