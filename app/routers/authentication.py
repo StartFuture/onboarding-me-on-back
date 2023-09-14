@@ -57,15 +57,6 @@ def logout(user: dict = Depends(verify_token)):
     else:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"msg": "The token has not been revoked!"}) 
     
-    
-
-    
-    
-    
-    
-    
-    
-
 
 @router.post('/token_health')
 def token_health_check(token: dict = Depends(verify_token)):
