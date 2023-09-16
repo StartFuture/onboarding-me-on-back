@@ -12,9 +12,10 @@ DATABASE = os.getenv("DATABASE")
 PORT = os.getenv("PORT")
 EMAIL = os.getenv("EMAIL")
 EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
+SECRET_KEY = os.getenv("SECRET_KEY")
+ALGORITHM = os.getenv("ALGORITHM")
+ACCESS_TOKEN_EXPIRES = os.getenv("ACCESS_TOKEN_EXPIRES")
 
-NAME_PATTERN = r"^[A-Za-zÀ-ÿ\s\.\-0-9]+$"
-LINK_DOWNLOAD_PATTERN = r"https\:\/\/[www\.]?[A-z\.0-9]+[\.A-z]+\/.*"
 
 dict_regex = {'name pattern' : r"^[A-Za-zÀ-ÿ\s\.\-0-9]+$",
               'link download pattern' : r"https\:\/\/[www\.]?[A-z\.0-9]+[\.A-z]+\/.*",

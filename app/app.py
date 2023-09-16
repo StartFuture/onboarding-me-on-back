@@ -9,6 +9,8 @@ from app.routers.gamified_journey import router as router_gamified_journey
 from app.routers.welcome_kit import router as router_welcome_kit
 from app.routers.track_kit import router as track_kit
 from app.routers.medal import router as router_medal
+from app.routers.authentication import router as router_login
+from app.routers.password_edit import router as router_password_edit
 
 
 app = FastAPI()
@@ -41,4 +43,5 @@ app.include_router(router=router_gamified_journey)
 app.include_router(router=router_welcome_kit)
 app.include_router(router=track_kit)
 app.include_router(router=router_medal)
-
+app.include_router(router=router_login)
+app.include_router(router=router_password_edit)
