@@ -74,6 +74,7 @@ def update_track_status_to_delivered(tracking_id: int):
     SET status='delivered'
     WHERE id = {tracking_id}
     ;
+
     """
     
     try:
@@ -85,3 +86,33 @@ def update_track_status_to_delivered(tracking_id: int):
         connection.close()
 
     return True
+
+
+
+def verify_if_tracking_exists(tracking_id: int):
+    
+    connection, cursor = connect_database()
+    
+    query = f"""
+    SELECT id, tracking_code, status, employee_id, welcome_kit_id
+    FROM onboarding_me.Tracking
+    WHERE id = {tracking_id}
+    ;
+    """
+
+    try:
+        cursor.execute(query)
+        
+    except Exception as error:
+        connection.close()
+        return None
+    
+    else:
+        
+        tracking_exists = cursor.fetchone()
+        
+        if tracking_exists:
+            return True
+        
+    return False
+    

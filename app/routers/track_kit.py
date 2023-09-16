@@ -4,8 +4,7 @@ from fastapi.responses import JSONResponse
 from app.dao import dao_track_kit as dao
 from app.dao.dao_welcomekit import verify_if_welcome_kit_exists
 from app.schemas.track_kit import TrackKitCreate
-from app.dao.dao_track_kit import insert_pack, select_pack, update_track, delivered_kit
-from app.schemas.track_kit import TrackKitCreate, TrackKitEdit
+
 
 
 router = APIRouter(
@@ -75,16 +74,6 @@ def modify_status_to_delivered(tracking_id: int):
 
     if modify:
         return JSONResponse(status_code=status.HTTP_200_OK, content={"msg": "This tracking has been modified!"})
-
-    else:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "This welcome kit can't be modified!"})
-
-@router.put("/delivered_kit")
-def modify_track(employee_id: int):
-    modify = delivered_kit(employee_id=employee_id)
-
-    if modify:
-        return JSONResponse(status_code=status.HTTP_200_OK, content={"msg": "This tracking has been delivered!"})
 
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "This welcome kit can't be modified!"})
