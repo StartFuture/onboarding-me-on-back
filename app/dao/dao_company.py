@@ -139,7 +139,7 @@ def verify_company_exists_by_email(company_email: str):
     connection, cursor = connect_database()
     
     query = f"""
-    SELECT email
+    SELECT id, company_password, email
     FROM Company c 
     WHERE c.email = '{company_email}';
     """
@@ -149,17 +149,15 @@ def verify_company_exists_by_email(company_email: str):
         
     except Exception as error:
         connection.close()
-        return False
+        return None
     
     else:
         user_exists = cursor.fetchone()
         connection.close()
-        if user_exists:
-            return True
-        
-        return False
-
-
+    
+        return user_exists
+    
+    
 def verify_if_company_exists(company_id: int):
     
     connection, cursor = connect_database()

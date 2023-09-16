@@ -221,4 +221,9 @@ CREATE TABLE IF NOT EXISTS Employee_Feedback (
   PRIMARY KEY (id)
 );
 
-
+CREATE TABLE IF NOT EXISTS Revoked_Tokens (
+  id BIGINT AUTO_INCREMENT,
+  user_id BIGINT NOT NULL,
+  token VARCHAR(255) NOT NULL,
+  PRIMARY KEY (id)
+);

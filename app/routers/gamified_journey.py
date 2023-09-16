@@ -4,7 +4,7 @@ from fastapi.responses import JSONResponse
 from app.dao.dao_gamified_journey import insert_video_company, select_video_company, modify_video_company, delete_video
 from app.dao.dao_company import select_company
 from app.schemas.gamified_journey import GamifiedJourney 
-
+from app.utils import fix_video_link
 
 router = APIRouter(
     prefix="/game_journey",
@@ -37,6 +37,8 @@ def create_video_company(gamifiedJourney: GamifiedJourney):
     
     company = select_company(gamifiedJourney.company_id)
     
+    gamifiedJourney.welcome_video_link = fix_video_link(gamifiedJourney.welcome_video_link)
+    
     if not company:
         video = insert_video_company(company_id=gamifiedJourney.company_id, link=gamifiedJourney.welcome_video_link)
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "This company's video can't be created"})
@@ -53,6 +55,9 @@ def update_video_company(company_id: int, new_link: str):
     if company == None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "This company doesn't exist!"})
     
+    
+    new_link = fix_video_link(new_link)
+     
     video = modify_video_company(company_id=company_id, new_link=new_link)
 
     if video:
