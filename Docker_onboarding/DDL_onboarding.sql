@@ -69,7 +69,7 @@ CREATE TABLE IF NOT EXISTS WelcomeKit_WelcomeKitItem (
 
 CREATE TABLE IF NOT EXISTS Tracking (
   id BIGINT AUTO_INCREMENT,
-  tracking_code VARCHAR(255) NOT NULL UNIQUE,
+  tracking_code VARCHAR(255) UNIQUE,
   status ENUM('to_be_send','sended','delivered') NOT NULL,
   employee_id BIGINT NOT NULL,
   welcome_kit_id BIGINT NOT NULL,

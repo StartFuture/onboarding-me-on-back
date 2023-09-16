@@ -1,12 +1,14 @@
 from app.dao.dao import connect_database
 
+
 def select_pack(employee_id: int):
     
     connection, cursor = connect_database()
     
     query = f"""
-    SELECT tracking_code, status, tracking_id, employee_id, welcome_kit_id from Tracking
-	WHERE employee_id = '{employee_id}';
+    SELECT tracking_code, status, employee_id, welcome_kit_id from Tracking
+    WHERE employee_id = {employee_id}
+    ;
     """
 
     try:
@@ -16,17 +18,19 @@ def select_pack(employee_id: int):
     else:
         pack = cursor.fetchone()
     finally:
-        connection.commit()
         connection.close()
 
     return pack
 
-def insert_pack(employee_id: int, welcome_kit_id: int, tracking_code: str, status: str):
+
+def insert_pack(employee_id: int, welcome_kit_id: int):
     
     connection, cursor = connect_database()
     
     query = f"""
-    INSERT INTO Tracking(employee_id, welcome_kit_id, tracking_code, status) VALUES ('{employee_id}', '{welcome_kit_id}', '{tracking_code}', '{status}');
+    INSERT INTO Tracking(employee_id, welcome_kit_id, status) 
+    VALUES 
+    ('{employee_id}', '{welcome_kit_id}', 'to_be_send');
     """
     
     try:
@@ -39,40 +43,43 @@ def insert_pack(employee_id: int, welcome_kit_id: int, tracking_code: str, statu
 
     return True
 
-def update_track(status: str, tracking_code: str):
+def update_track_status_to_sended(tracking_id: int, tracking_code: str):
     
     connection, cursor = connect_database()
     
     query = f"""
-    UPDATE Tracking
-	set status = '{status}'
-	WHERE tracking_code = '{tracking_code}';
+    UPDATE onboarding_me.Tracking
+    SET status='sended', tracking_code='{tracking_code}'
+    WHERE id = {tracking_id}
+    ;
     """
     
     try:
         cursor.execute(query)
     except Exception as error:
-        return None
+        return False
     finally:
         connection.commit()
         connection.close()
-
+        
     return True
 
-def delivered_kit(employee_id: int):
+
+def update_track_status_to_delivered(tracking_id: int):
     
     connection, cursor = connect_database()
     
     query = f"""
-    UPDATE Tracking
-	set status = "delivered"
-	WHERE employee_id = '{employee_id}';
+    UPDATE onboarding_me.Tracking
+    SET status='delivered'
+    WHERE id = {tracking_id}
+    ;
     """
     
     try:
         cursor.execute(query)
     except Exception as error:
-        return None
+        return False
     finally:
         connection.commit()
         connection.close()

@@ -1,5 +1,5 @@
 from app.dao.dao import connect_database
-
+from app.dao.dao_track_kit import insert_pack
 
 def select_welcome_kit(employee_id: int):
     
@@ -62,11 +62,11 @@ def select_welcome_kit_item(welcome_kit_id: int, item_id: int):
         return welcome_kit_item
     
 
-async def insert_welcome_kit(welcome_kit_name: str = None, welcome_kit_image: str = None, kit_item_name: str = None, kit_item_image: str = None):    
+async def insert_welcome_kit(welcome_kit_name: str = None, welcome_kit_image: str = None, kit_item_name: str = None, kit_item_image: str = None, employee_id: int = None):    
 
     connection, cursor  = connect_database()
     
-    if welcome_kit_name and welcome_kit_image:   
+    if welcome_kit_name and welcome_kit_image and employee_id:   
             
         query = f"""
         INSERT INTO WelcomeKit 
@@ -101,6 +101,21 @@ async def insert_welcome_kit(welcome_kit_name: str = None, welcome_kit_image: st
     else:
         
         connection.commit()
+        
+        if name == welcome_kit_name:
+            
+            query = "SELECT LAST_INSERT_ID() as id_kit FROM WelcomeKit;"
+            cursor.execute(query)
+            
+            id_kit = cursor.fetchone()
+            connection.commit()
+            connection.close()
+            
+            link_kit_to_tracking = insert_pack(employee_id=employee_id, welcome_kit_id=id_kit['id_kit'])
+            
+            if not link_kit_to_tracking:
+                return False
+        
         
         if name == kit_item_name:
             
