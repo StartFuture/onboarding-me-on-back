@@ -10,7 +10,7 @@ def select_tools(company_id: int):
     connection, cursor = connect_database()
     
     query = f"""
-    SELECT t.name, t.link_download, t.score, t.game_id, ct.name as category_name FROM Tool t
+    SELECT t.id as tool_id, t.name, t.link_download, t.score, t.game_id, ct.name as category_name FROM Tool t
 	right join CategoryTool ct on t.category_id = ct.id 
     left join Game g on g.id = t.game_id 
     left join GamifiedJourney gj on gj.id = g.gamified_journey_id 

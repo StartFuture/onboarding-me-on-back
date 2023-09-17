@@ -3,7 +3,7 @@ from app.schemas.quiz import Quiz, Alternative
 from app.utils import fix_video_link
 
 
-def select_quiz(company_id: int = None):
+def select_quiz_principle(company_id: int = None):
 
     connection, cursor = connect_database()
 
@@ -15,7 +15,37 @@ def select_quiz(company_id: int = None):
         left join GamifiedJourney gj on gj.id = g.gamified_journey_id 
         left join Company c on c.id = gj.company_id 
         WHERE
-        c.id = {company_id}
+        c.id = {company_id} and q.quiz_type = 'principle'
+        ;
+        """
+
+    try:
+        cursor.execute(query)
+
+    except Exception as error:
+        connection.close()
+        return False
+
+    else:
+         quiz_list = cursor.fetchall()
+         connection.close()
+
+         return quiz_list
+     
+     
+def select_quiz_culture(company_id: int = None):
+
+    connection, cursor = connect_database()
+
+    if company_id:
+
+        query = f"""
+        SELECT q.* FROM Quiz q
+        left join Game g on g.id = q.game_id 
+        left join GamifiedJourney gj on gj.id = g.gamified_journey_id 
+        left join Company c on c.id = gj.company_id 
+        WHERE
+        c.id = {company_id} and q.quiz_type = 'culture'
         ;
         """
 

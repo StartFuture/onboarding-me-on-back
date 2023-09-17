@@ -15,11 +15,21 @@ router = APIRouter(
         )
 
 
-
-@router.get("/")
-def get_quiz(company_id: int):
+@router.get("/culture")
+def get_quiz_principle(company_id: int):
     
-    quiz = dao.select_quiz(company_id=company_id)
+    quiz = dao.select_quiz_culture(company_id=company_id)
+    
+    if quiz:
+        return JSONResponse(status_code=status.HTTP_200_OK, content=quiz)
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "This company don't have quiz!"})
+    
+    
+@router.get("/principle")
+def get_quiz_culture(company_id: int):
+    
+    quiz = dao.select_quiz_principle(company_id=company_id)
     
     if quiz:
         return JSONResponse(status_code=status.HTTP_200_OK, content=quiz)
