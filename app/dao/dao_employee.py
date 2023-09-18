@@ -624,8 +624,9 @@ def verify_employee_exists_by_email(employee_email: str):
     connection, cursor = connect_database()
     
     query = f"""
-    SELECT id, employee_password, email
+    SELECT company_id, e.id, employee_password, e.email 
     FROM Employee e
+    LEFT JOIN Company c ON c.id = e.company_id 
     WHERE e.email = '{employee_email}'
     ;
     """

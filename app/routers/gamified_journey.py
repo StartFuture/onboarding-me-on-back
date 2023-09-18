@@ -5,7 +5,7 @@ from app.dao.dao_gamified_journey import insert_video_company, select_video_comp
 from app.dao.dao_company import select_company
 from app.schemas.gamified_journey import GamifiedJourney 
 from app.utils import fix_video_link
-from app.auth import verify_token
+from app.auth import verify_token_company, verify_token_employee_or_company
 
 router = APIRouter(
     prefix="/game_journey",
@@ -17,9 +17,11 @@ router = APIRouter(
 
 
 @router.get("/get-video")
-def get_video_company(payload: str = Depends(verify_token)):
+def get_video_company(payload: str = Depends(verify_token_employee_or_company)):
+    
+    print(payload)
 
-    video = select_video_company(company_id=payload['sub'])
+    video = select_video_company(company_id=payload['company'])
     
     if not video:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "This company video doesn't exist!"})
@@ -28,7 +30,7 @@ def get_video_company(payload: str = Depends(verify_token)):
 
 
 @router.post("/create")
-def create_video_company(gamifiedJourney: GamifiedJourney, payload: str = Depends(verify_token)):
+def create_video_company(gamifiedJourney: GamifiedJourney, payload: str = Depends(verify_token_company)):
     
     gamifiedJourney.welcome_video_link = fix_video_link(gamifiedJourney.welcome_video_link)
     
@@ -40,7 +42,7 @@ def create_video_company(gamifiedJourney: GamifiedJourney, payload: str = Depend
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"msg": "Error in video!"})
 
 @router.put("/update")
-def update_video_company(new_link: str, payload: str = Depends(verify_token)):
+def update_video_company(new_link: str, payload: str = Depends(verify_token_company)):
     
     new_link = fix_video_link(new_link)
      
@@ -53,7 +55,7 @@ def update_video_company(new_link: str, payload: str = Depends(verify_token)):
 
 
 @router.delete("/delete")
-def delete_video_company(payload: str = Depends(verify_token)):
+def delete_video_company(payload: str = Depends(verify_token_company)):
     
     video_deleted = delete_video(company_id=payload['sub'])
     

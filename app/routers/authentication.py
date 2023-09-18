@@ -9,7 +9,7 @@ from app.dao.dao_company import verify_company_exists_by_email
 from app.dao.dao_employee import verify_employee_exists_by_email
 from app.dao.dao_auth import insert_revoked_tokens
 from app.parameters import ACCESS_TOKEN_EXPIRES, ALGORITHM, SECRET_KEY
-from app.auth import verify_token, return_token
+from app.auth import verify_token_health, return_token
 
 
 router = APIRouter(
@@ -38,6 +38,7 @@ def login(user: OAuth2PasswordRequestForm = Depends(), type: str = Query(pattern
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={"msg": "User or passwords incorrects!"})
 
         payload = {
+            'company': company_user['id'],
             'email': company_user['email'],
             'sub': str(company_user['id']),
             'exp': datetime.utcnow() + timedelta(days=int(ACCESS_TOKEN_EXPIRES)),
@@ -61,6 +62,7 @@ def login(user: OAuth2PasswordRequestForm = Depends(), type: str = Query(pattern
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={"msg": "User or passwords incorrects!"})
 
         payload = {
+            'company': employee_user['company_id'],
             'email': employee_user['email'],
             'sub': str(employee_user['id']),
             'exp': datetime.utcnow() + timedelta(days=int(ACCESS_TOKEN_EXPIRES)),
@@ -86,7 +88,7 @@ def logout(token: str = Depends(return_token)):
     
 
 @router.post('/token_health')
-def token_health_check(payload: dict = Depends(verify_token)):
+def token_health_check(payload: dict = Depends(verify_token_health)):
     
     if payload['type'] == 'company':
 

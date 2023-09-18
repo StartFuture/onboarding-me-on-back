@@ -23,7 +23,28 @@ def return_token(token: dict = Depends(oauth)):
     return token
     
 
-def verify_token(token: dict = Depends(oauth)):
+def verify_token_health(token: dict = Depends(oauth)):
+    
+    try:
+        
+        payload = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
+        
+        if payload['type'] != 'company' and payload['type'] != 'employee':
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={"msg": "Not authorized!"})
+        
+        token_revoked = dao.select_revoked_token(user_id=payload['sub'], token=token)
+    
+        if token_revoked:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={"msg": "User or passwords incorrects!"})
+        
+        return payload
+        
+    except JWTError:
+        raise HTTPException(detail={'msg': 'missing token'}, 
+                             status_code=status.HTTP_401_UNAUTHORIZED)
+        
+        
+def verify_token(token: dict):
     
     try:
         
@@ -80,15 +101,18 @@ def verify_token_employee_or_company(token: dict = Depends(oauth)):
     
     if payload['type'] != 'employee' and payload['type'] != 'company':
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={"msg": "User or passwords incorrects!"})
+     
+     
+    if payload['type'] == 'employee':
         
-    employee_exists = verify_employee_exists_by_email(payload['email'])
+        employee_exists = verify_employee_exists_by_email(payload['email'])
+        if not employee_exists:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={"msg": "User or passwords incorrects!"})
     
-    if not employee_exists:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={"msg": "User or passwords incorrects!"})
-    
-    company_exists = verify_company_exists_by_email(payload['email'])
-
-    if not company_exists:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={"msg": "User or passwords incorrects!"})
+    if payload['type'] == 'company':
+        
+        company_exists = verify_company_exists_by_email(payload['email'])
+        if not company_exists:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={"msg": "User or passwords incorrects!"})
     
     return payload
