@@ -37,7 +37,7 @@ def login(user: OAuth2PasswordRequestForm = Depends(), type: str = Query(pattern
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={"msg": "User or passwords incorrects!"})
 
         payload = {
-            'company_email': company_user['email'],
+            'email': company_user['email'],
             'sub': str(company_user['id']),
             'exp': datetime.utcnow() + timedelta(days=int(ACCESS_TOKEN_EXPIRES)),
             'type': 'company'
@@ -60,7 +60,7 @@ def login(user: OAuth2PasswordRequestForm = Depends(), type: str = Query(pattern
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={"msg": "User or passwords incorrects!"})
 
         payload = {
-            'employee_email': employee_user['email'],
+            'email': employee_user['email'],
             'sub': str(employee_user['id']),
             'exp': datetime.utcnow() + timedelta(days=int(ACCESS_TOKEN_EXPIRES)),
             'type': 'employee'
