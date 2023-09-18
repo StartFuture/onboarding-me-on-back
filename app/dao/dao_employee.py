@@ -2,12 +2,123 @@ from datetime import datetime
 from decimal import Decimal
 
 from app.dao.dao import connect_database
-from app.schemas.employee import FeedBackEmployee
+from app.schemas.employee import FeedBackEmployee, Employee
 from app.schemas.quiz import EmployeeAlternative
 from app.dao.dao_tools import sum_score
 from app.dao.dao_quiz import get_max_score
 
 
+def select_employee(employee_id: int):
+    
+    connection, cursor = connect_database()
+    
+    query = f"""
+    SELECT *
+    from Employee e
+    WHERE id = {employee_id}
+    ;
+    """
+
+    try:
+        cursor.execute(query)
+        
+    except Exception as error:
+        connection.close()
+        return None
+    
+    else:
+        employee = cursor.fetchone()
+        connection.close()
+        
+        if employee:
+            employee['birthdate'] = str(employee['birthdate'])
+        
+        return employee
+
+
+def insert_employee(employee: Employee):
+    
+    connection, cursor = connect_database()
+    
+    query ="""
+    INSERT INTO onboarding_me.Employee
+    (first_name, surname, birthdate, employee_role, email, employee_password, phone_number, cpf, level_access, company_id, address_id)
+    VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+    ;
+    """
+    
+    params = (employee.first_name, employee.surname, employee.birthdate, 
+              employee.employee_role, employee.email, employee.employee_password, employee.phone_number, 
+              employee.cpf, employee.level_access, employee.company_id, employee.address_id)
+    
+    try:
+        cursor.execute(query, params)
+
+    except Exception as error:
+        print(error)
+        connection.close()
+        return False
+
+    else:
+        connection.commit()
+        connection.close()
+        return True
+    
+    
+def update_employee(employee: Employee):
+    
+    connection, cursor = connect_database()
+    
+    query ="""
+    UPDATE onboarding_me.Employee
+    SET email = %s, first_name = %s, surname = %s, birthdate = %s, employee_role = %s, 
+    employee_password = %s, phone_number = %s, cpf= %s, 
+    level_access = %s, company_id= %s, address_id= %s
+    WHERE id = %s
+    ;
+    """
+    
+    params = (employee.email, employee.first_name, employee.surname, employee.birthdate, employee.employee_role, 
+              employee.employee_password, employee.phone_number, employee.cpf, 
+              employee.level_access, employee.company_id, employee.address_id, 
+              employee.employee_id)
+    
+    try:
+        cursor.execute(query, params)
+
+    except Exception as error:
+        connection.close()
+        return False
+
+    else:
+        connection.commit()
+        connection.close()
+        return True
+    
+    
+def delete_employee(employee_id: int):
+    
+    connection, cursor = connect_database()
+    
+    query = f"""
+    DELETE FROM onboarding_me.Employee
+    WHERE id = {employee_id}
+    ;
+    """
+    
+    try:
+        cursor.execute(query)
+        
+    except:
+        connection.close()
+        return False
+    else:
+        connection.commit()
+        connection.close()
+        
+        return True    
+    
+    
 def insert_employee_answer(employee_alternative: EmployeeAlternative):
 
     connection, cursor = connect_database()
@@ -297,15 +408,115 @@ def get_employee_medals(employee_id: int, game_id: int):
              
         return employee_medals_list
 
-          
-def verify_employee_exists(employee_id: int, company_id: int):
+
+def get_count_employee_answers(employee_id: int):
+    
+    
+    connection, cursor = connect_database()
+
+    query = f"""
+    SELECT COUNT(id) FROM Employee_Alternative ea 
+    WHERE employee_id = {employee_id}
+    ;
+    """
+
+    cursor.execute(query)
+
+    count_answers = cursor.fetchone()
+    connection.close()
+
+    return count_answers
+    
+
+def get_count_quiz(game_id: int):
+    
+    
+    connection, cursor = connect_database()
+
+    query = f"""
+    SELECT COUNT(id) FROM Quiz q 
+    WHERE game_id  = {game_id}
+    ; 
+    """
+
+    cursor.execute(query)
+
+    count_quiz = cursor.fetchone()
+    connection.close()
+
+    return count_quiz
+    
+    
+def finished_quiz_game(employee_id: int, game_id: int):
+
+    try:
+        count_quiz = get_count_quiz(game_id=game_id)
+        count_answers = get_count_employee_answers(employee_id=employee_id)
+        
+    except Exception as error:
+        return False
+    
+    else:
+
+        if count_answers != count_quiz:
+            return False
+           
+    return True
+
+
+def select_sum_total_points(employee_id: int):
+
+    connection, cursor = connect_database()
+
+    query = f"""
+    SELECT SUM(s.total_points) FROM Score s
+    WHERE s.employee_id = {employee_id};
+    """
+
+    try:
+        cursor.execute(query)
+    except Exception as error:
+        connection.close()
+        return None
+    else:
+        total_points = cursor.fetchone()
+
+        connection.close()
+
+        return int(total_points["SUM(s.total_points)"])
+    
+
+def get_medals_by_employee_id(employee_id: int):
+
+    connection, cursor = connect_database()
+
+    query = f"""
+    SELECT m.name, m.image, s.game_id FROM Score s LEFT JOIN Medal_Score ms ON ms.score_id = s.id
+    LEFT JOIN Medal m ON m.id = ms.medal_id
+    WHERE s.employee_id = {employee_id};
+    """
+
+    try:
+        cursor.execute(query)
+    except Exception as error:
+        connection.close()
+        return None
+    else:
+        medals_employee = cursor.fetchall()
+
+        connection.close()
+
+        return medals_employee
+    
+
+def verify_employee_exists(employee_id: int):
     
     connection, cursor = connect_database()
     
     query = f"""
     SELECT id
     FROM onboarding_me.Employee
-    WHERE id = {employee_id} and company_id = {company_id};
+    WHERE id = {employee_id};
     """
     
     try:
@@ -407,102 +618,27 @@ def verify_score_quiz_exists(game_id: int, employee_id: int):
 
         return 1 if bool(game_id) else 0
     
-
-def get_count_employee_answers(employee_id: int):
     
+def verify_employee_exists_by_email(employee_email: str):
     
     connection, cursor = connect_database()
-
+    
     query = f"""
-    SELECT COUNT(id) FROM Employee_Alternative ea 
-    WHERE employee_id = {employee_id}
+    SELECT id, employee_password, email
+    FROM Employee e
+    WHERE e.email = '{employee_email}'
     ;
     """
-
-    cursor.execute(query)
-
-    count_answers = cursor.fetchone()
-    connection.close()
-
-    return count_answers
     
-
-def get_count_quiz(game_id: int):
-    
-    
-    connection, cursor = connect_database()
-
-    query = f"""
-    SELECT COUNT(id) FROM Quiz q 
-    WHERE game_id  = {game_id}
-    ; 
-    """
-
-    cursor.execute(query)
-
-    count_quiz = cursor.fetchone()
-    connection.close()
-
-    return count_quiz
-    
-    
-def finished_quiz_game(employee_id: int, game_id: int):
-
     try:
-        count_quiz = get_count_quiz(game_id=game_id)
-        count_answers = get_count_employee_answers(employee_id=employee_id)
+        cursor.execute(query)
         
     except Exception as error:
-        return False
-    
-    else:
-
-        if count_answers != count_quiz:
-            return False
-           
-    return True
-
-
-def select_sum_total_points(employee_id: int):
-
-    connection, cursor = connect_database()
-
-    query = f"""
-    SELECT SUM(s.total_points) FROM Score s
-    WHERE s.employee_id = {employee_id};
-    """
-
-    try:
-        cursor.execute(query)
-    except Exception as error:
         connection.close()
         return None
-    else:
-        total_points = cursor.fetchone()
-
-        connection.close()
-
-        return int(total_points["SUM(s.total_points)"])
     
-
-def get_medals_by_employee_id(employee_id: int):
-
-    connection, cursor = connect_database()
-
-    query = f"""
-    SELECT m.name, m.image, s.game_id FROM Score s LEFT JOIN Medal_Score ms ON ms.score_id = s.id
-    LEFT JOIN Medal m ON m.id = ms.medal_id
-    WHERE s.employee_id = {employee_id};
-    """
-
-    try:
-        cursor.execute(query)
-    except Exception as error:
-        connection.close()
-        return None
     else:
-        medals_employee = cursor.fetchall()
-
+        user_exists = cursor.fetchone()
         connection.close()
-
-        return medals_employee
+    
+        return user_exists

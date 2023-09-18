@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 
 from app.utils import validate_password
 from app.dao.dao_company import verify_company_exists_by_email
+from app.dao.dao_employee import verify_employee_exists_by_email
 from app.dao.dao_auth import insert_revoked_tokens
 from app.parameters import ACCESS_TOKEN_EXPIRES, ALGORITHM, SECRET_KEY
 from app.auth import verify_token, return_token
@@ -20,8 +21,8 @@ router = APIRouter(
 
 
 
-@router.post("/login")
-def login(user: OAuth2PasswordRequestForm = Depends()):
+@router.post("/login/company")
+def login_company(user: OAuth2PasswordRequestForm = Depends()):
 
     company_user = verify_company_exists_by_email(user.username)
     
@@ -38,6 +39,32 @@ def login(user: OAuth2PasswordRequestForm = Depends()):
         'sub': str(company_user['id']),
         'exp': datetime.utcnow() + timedelta(days=int(ACCESS_TOKEN_EXPIRES)),
         'type': 'company'
+     }
+    
+    token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+    
+    return JSONResponse(status_code=status.HTTP_200_OK, content={'access_token': token})
+
+
+@router.post("/login/employee")
+def login_employee(user: OAuth2PasswordRequestForm = Depends()):
+
+    employee_user = verify_employee_exists_by_email(user.username)
+    print('fds')
+    
+    if not employee_user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={"msg": "User or passwords incorrects!"})
+    
+    valid_password = validate_password(password=user.password, password_hash=employee_user['employee_password'])
+    
+    if not valid_password:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={"msg": "User or passwords incorrects!"})
+
+    payload = {
+        'company_email': employee_user['email'],
+        'sub': str(employee_user['id']),
+        'exp': datetime.utcnow() + timedelta(days=int(ACCESS_TOKEN_EXPIRES)),
+        'type': 'employee'
      }
     
     token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)

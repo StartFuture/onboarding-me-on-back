@@ -23,7 +23,13 @@ dict_regex = {'name pattern' : r"^[A-Za-zÀ-ÿ\s\.\-0-9]+$",
               'quiz type pattern': r"culture|principle",
               'link video pattern': r"(https\:\/\/)?www\.youtube\.com\/watch\?v\=[A-z0-9]+",
               'allowed image extensions': r".jpeg|.jpg|.png|.gif",
-              'email pattern': r"^[a-zA-Z0-9._%+-]+@[a-z]+\.[a-z]"
+              'email pattern': r"^[a-zA-Z0-9._%+-]+@[a-z]+\.[a-z]",
+              'birthdate pattern': r"^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$",
+              'phone number pattern': r"^\+55\(\d{2}\)\d{4}-\d{4}$",
+              'cpf pattern': r"^\d{3}\.\d{3}\.\d{3}-\d{2}$",
+              'level access pattern': r"admin|manager|default",
+              'feedback type pattern': r"gamefiedjourney|welcomekit",
+              'zipcode pattern': r"^\d{5}-\d{3}$",
               }
 
 

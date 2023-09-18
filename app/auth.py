@@ -7,7 +7,7 @@ from app.dao.dao_company import verify_company_exists_by_email
 from app.parameters import ALGORITHM, SECRET_KEY
 
 
-oauth = OAuth2PasswordBearer(tokenUrl="/auth/login")
+oauth = OAuth2PasswordBearer(tokenUrl="/auth/login/")
 
 
 def return_token(token: dict = Depends(oauth)):

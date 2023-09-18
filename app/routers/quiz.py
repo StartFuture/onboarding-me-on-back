@@ -151,9 +151,9 @@ def del_alternative(alternative_id: int, quiz_id: int):
 
 
 @router.get("/next-quiz/")
-def return_next_quiz(employee_id: int, company_id: int):
+def return_next_quiz(employee_id: int):
 
-    employee_exists = dao_employee.verify_employee_exists(employee_id, company_id)
+    employee_exists = dao_employee.verify_employee_exists(employee_id)
 
     if not employee_exists:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "The employee doesn't exist!"})
