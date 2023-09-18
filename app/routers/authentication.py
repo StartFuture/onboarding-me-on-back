@@ -24,6 +24,7 @@ router = APIRouter(
 @router.post("/login")
 def login(user: OAuth2PasswordRequestForm = Depends(), type: str = Query(pattern=r'company|employee', description="User type")):
     
+    
     if type == 'company':
         
         company_user = verify_company_exists_by_email(user.username)
