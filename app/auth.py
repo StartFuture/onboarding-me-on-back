@@ -4,10 +4,11 @@ from fastapi.security import OAuth2PasswordBearer
 
 from app.dao import dao_auth as dao
 from app.dao.dao_company import verify_company_exists_by_email
+from app.dao.dao_employee import verify_employee_exists_by_email
 from app.parameters import ALGORITHM, SECRET_KEY
 
 
-oauth = OAuth2PasswordBearer(tokenUrl="/auth/login/")
+oauth = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
 def return_token(token: dict = Depends(oauth)):
@@ -28,76 +29,51 @@ def verify_token(token: dict = Depends(oauth)):
         
         payload = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
         
-        if payload['type'] == 'company':
-            verify_company = verify_token_company(token)
-            return verify_company
-            
-        elif payload['type'] == 'employee':
-            verify_employee = verify_token_employee(token)
-            return verify_employee
-        else:
+        if payload['type'] != 'company' and payload['type'] != 'employee':
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={"msg": "Not authorized!"})
         
-        
-    except JWTError:
-        raise HTTPException(detail={'msg': 'missing token'}, 
-                             status_code=status.HTTP_401_UNAUTHORIZED)
-    
-    
-def verify_token_company(token: dict = Depends(verify_token)):
-    
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
-        
-    except JWTError:
-        raise HTTPException(detail={'msg': 'missing token'}, 
-                             status_code=status.HTTP_401_UNAUTHORIZED)
-    
-    else:
-        
-        company_exists = verify_company_exists_by_email(payload['company_email'])
-
-        if not company_exists:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={"msg": "User or passwords incorrects!"})
-        
-        
         token_revoked = dao.select_revoked_token(user_id=payload['sub'], token=token)
-        
+    
         if token_revoked:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={"msg": "User or passwords incorrects!"})
         
-        type_is_valid = True if payload['type'] == 'company' else False
-        
-        if not type_is_valid:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={"msg": "Not authorized!"})
-        
         return payload
-    
-
-def verify_token_employee(token: dict = Depends(verify_token)):
-    
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
         
     except JWTError:
         raise HTTPException(detail={'msg': 'missing token'}, 
                              status_code=status.HTTP_401_UNAUTHORIZED)
     
-    else:
-        
-        company_exists = verify_company_exists_by_email(payload['company_email'])
+    
+def verify_token_company(payload: dict = Depends(verify_token)):
 
-        if not company_exists:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={"msg": "User or passwords incorrects!"})
+    company_exists = verify_company_exists_by_email(payload['company_email'])
+
+    if not company_exists:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={"msg": "User or passwords incorrects!"})
+    
+    return payload
+    
+
+def verify_token_employee(payload: dict = Depends(verify_token)):
         
-        token_revoked = dao.select_revoked_token(user_id=payload['sub'], token=token)
+    employee_exists = verify_employee_exists_by_email(payload['email'])
+    
+    if not employee_exists:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={"msg": "User or passwords incorrects!"})
+    
+    return payload
+
+
+def verify_token_employee_or_company(payload: dict = Depends(verify_token)):
         
-        if token_revoked:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={"msg": "User or passwords incorrects!"})
-        
-        type_is_valid = True if payload['type'] == 'employee' else False
-        
-        if not type_is_valid:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={"msg": "Not authorized!"})
-        
-        return payload
+    employee_exists = verify_employee_exists_by_email(payload['email'])
+    
+    if not employee_exists:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={"msg": "User or passwords incorrects!"})
+    
+    company_exists = verify_company_exists_by_email(payload['company_email'])
+
+    if not company_exists:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={"msg": "User or passwords incorrects!"})
+    
+    return payload
