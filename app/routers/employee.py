@@ -2,11 +2,6 @@ from app.dao.dao_tools import verify_if_company_exists
 from app.schemas.employee import FeedBackEmployee
 from fastapi import APIRouter
 from app.dao import dao_employee as dao
-<<<<<<< HEAD
-=======
-from app.dao import dao_quiz 
-from app.dao.dao_quiz import verify_if_quiz_id_exists, verify_if_game_id_exists
-from app.schemas.quiz import EmployeeAlternative
 
 
 >>>>>>> main
@@ -167,23 +162,4 @@ def game_quiz_completed(employee_id: int, game_id: int, company_id: int):
     if quiz_completed:
         return JSONResponse(status_code=status.HTTP_200_OK, content={"msg": "The game has finished!"})
     else:
-<<<<<<< HEAD
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={"msg": "Incorrect answer!"})
-
-@router.post("/register/feedback")
-def create_feedback_employee(feedback_employee: FeedBackEmployee):
-
-    employee_exists = dao.verify_employee_exists(feedback_employee.employee_id)
-    
-    if not employee_exists:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"msg": "This employee not exists!"})
-
-    is_register = dao.insert_feedback(feedback_employee)
-
-    if is_register:
-        return JSONResponse(status_code=status.HTTP_200_OK, content={"msg": "Successfully registered!"})
-    else:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"msg": "ERROR!"})
-=======
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"msg": "The game has not finished!!"})
->>>>>>> main

@@ -95,6 +95,11 @@ def insert_employee_score(employee_id: int):
     game_id = get_game_id_quiz(alternative_id= employee_alternative.alternative_id)
     
     data_list = get_employee_answer(employee_id= employee_alternative.employee_id)
+    last_updated = datetime.now()
+    
+    game_id = get_game_id_quiz(alternative_id= employee_alternative.alternative_id)
+    
+    data_list = get_employee_answer(employee_id= employee_alternative.employee_id)
     
     for data_dict in data_list:
         is_answer = data_dict['is_answer']
@@ -103,6 +108,21 @@ def insert_employee_score(employee_id: int):
     
     if is_answer == 1:
         
+        if score_exists:
+            score += sum_score(game_id)
+            query = f"""
+            UPDATE Score set total_points = {score}, last_updated = '{last_updated}'
+            WHERE game_id = {game_id} and employee_id = {employee_alternative.employee_id}
+            ;
+            """
+        else: 
+            query = f"""
+            INSERT INTO Score 
+            (total_points, last_updated, employee_id, game_id)
+            VALUES 
+            ({score}, '{last_updated}', {employee_alternative.employee_id}, {game_id})
+            ;
+            """
         if score_exists:
             score += sum_score(game_id)
             query = f"""
@@ -311,142 +331,4 @@ def verify_employee_exists(employee_id: int, company_id: int):
              return True
     
     return False
-
-def verify_alternative_exists(alternative_id: int, quiz_id: int):
-    
-    connection, cursor = connect_database()
-    
-    query = f"""
-    SELECT id
-    FROM onboarding_me.Alternative
-    WHERE id = {alternative_id} and quiz_id = {quiz_id} 
-    ;
-    """
-    
-    try:
-        cursor.execute(query)
-
-    except Exception as error:
-        connection.close()
-        return False
-
-    else:
-
-         alternative_exists = cursor.fetchone()
-         
-         if alternative_exists:
-             return True
-    
-    return False
-
-
-def verify_quiz_completed(quiz_id: int, employee_id: int):
-
-    connection, cursor = connect_database()
-
-    query = f"""
-    SELECT a.id
-    FROM onboarding_me.Employee_Alternative ea
-    LEFT JOIN Alternative a on a.id = ea.alternative_id 
-    WHERE a.quiz_id = {quiz_id} and ea.employee_id = {employee_id}
-    ;
-    """
-    
-    try:
-        cursor.execute(query)
         
-    except Exception as error:
-        
-        connection.close()
-        return False
-    
-    else:
-        
-        quiz_completed = cursor.fetchone()
-        connection.close()
-
-        if quiz_completed:
-            return True
-           
-    return False
-    
-    
-def verify_score_quiz_exists(game_id: int, employee_id: int):
-
-    connection, cursor = connect_database()
-
-    query = f"""
-    SELECT id FROM Score WHERE game_id = {game_id} and employee_id = {employee_id}
-    ;
-    """
-
-    try:
-        cursor.execute(query)
-        
-    except Exception as error:
-        connection.close()
-        return False
-    
-    else:
-        
-        game_id = cursor.fetchone()
-        connection.close()
-
-        return 1 if bool(game_id) else 0
-    
-
-def get_count_employee_answers(employee_id: int):
-    
-    
-    connection, cursor = connect_database()
-
-    query = f"""
-    SELECT COUNT(id) FROM Employee_Alternative ea 
-    WHERE employee_id = {employee_id}
-    ;
-    """
-
-    cursor.execute(query)
-
-    count_answers = cursor.fetchone()
-    connection.close()
-
-    return count_answers
-    
-
-def get_count_quiz(game_id: int):
-    
-    
-    connection, cursor = connect_database()
-
-    query = f"""
-    SELECT COUNT(id) FROM Quiz q 
-    WHERE game_id  = {game_id}
-    ; 
-    """
-
-    cursor.execute(query)
-
-    count_quiz = cursor.fetchone()
-    connection.close()
-
-    return count_quiz
-    
-    
-def finished_quiz_game(employee_id: int, game_id: int):
-    
-
-    try:
-        count_quiz = get_count_quiz(game_id=game_id)
-        count_answers = get_count_employee_answers(employee_id=employee_id)
-        
-    except Exception as error:
-        return False
-    
-    else:
-
-        if count_answers != count_quiz:
-            return False
-           
-    return True
-    
