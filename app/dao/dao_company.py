@@ -30,6 +30,34 @@ def select_company(company_id: int):
         return company
 
 
+def select_company_health_jwt(company_id: int):
+    
+    connection, cursor = connect_database()
+    
+    query = f"""
+    SELECT company_name, trading_name, logo, cnpj, email, state_register
+    from Company c 
+    WHERE id = {company_id}
+    ;
+    """
+
+    try:
+        cursor.execute(query)
+        
+    except Exception as error:
+        connection.close()
+        return None
+    
+    else:
+        company = cursor.fetchone()
+        connection.close()
+        
+        if company:
+            company['logo'] = company['logo'].decode('utf-8')
+        
+        return company
+
+
 def get_company_id(quiz_id: int = None, tool_id: int = None):
 
     connection, cursor = connect_database()
