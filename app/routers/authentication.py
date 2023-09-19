@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 
 from app.utils import validate_password
 from app.dao.dao_company import verify_company_exists_by_email
-from app.dao.dao_employee import verify_employee_exists_by_email
+from app.dao.dao_employee import verify_employee_exists_by_email, verify_employee_exists, select_employee_health_jwt
 from app.dao.dao_auth import insert_revoked_tokens
 from app.parameters import ACCESS_TOKEN_EXPIRES, ALGORITHM, SECRET_KEY
 from app.auth import verify_token_health, return_token
@@ -98,8 +98,16 @@ def token_health_check(payload: dict = Depends(verify_token_health)):
             )
         
     if payload['type'] == 'employee':
+        
+        employee = select_employee_health_jwt(payload["sub"])
+
+        if not employee:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, 
+                detail={"msg": "User or passwords incorrects!"}
+            )
 
         return JSONResponse(
-            content={'msg': 'token is valid', 'type': 'employee'},
+            content={'msg': 'token is valid', 'type': 'employee', 'employee': employee},
             status_code=status.HTTP_200_OK
             )
