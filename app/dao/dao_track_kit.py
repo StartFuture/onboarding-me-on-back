@@ -57,8 +57,9 @@ def update_track_status_to_sended(tracking_id: int, tracking_code: str):
     try:
         cursor.execute(query)
     except Exception as error:
-        print(error)
+        connection.close()
         return False
+    
     finally:
         connection.commit()
         connection.close()
