@@ -36,6 +36,34 @@ def select_employee(employee_id: int):
         return employee
 
 
+def select_employee_health_jwt(employee_id: int):
+    
+    connection, cursor = connect_database()
+    
+    query = f"""
+    SELECT first_name, surname, birthdate, employee_role, email, phone_number, cpf, level_access
+    FROM Employee e
+    WHERE id = {employee_id}
+    ;
+    """
+
+    try:
+        cursor.execute(query)
+        
+    except Exception as error:
+        connection.close()
+        return None
+    
+    else:
+        employee = cursor.fetchone()
+        connection.close()
+        
+        if employee:
+            employee['birthdate'] = str(employee['birthdate'])
+        
+        return employee
+
+
 def insert_employee(employee: Employee):
     
     connection, cursor = connect_database()

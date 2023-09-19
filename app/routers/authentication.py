@@ -5,6 +5,8 @@ from fastapi.security import OAuth2PasswordRequestForm
 from datetime import datetime, timedelta
 
 from app.utils import validate_password
+from app.dao.dao_company import verify_company_exists_by_email, select_company_health_jwt
+from app.dao.dao_employee import verify_employee_exists_by_email, select_employee_health_jwt
 from app.dao.dao_auth import insert_revoked_tokens
 from app.parameters import ACCESS_TOKEN_EXPIRES, ALGORITHM, SECRET_KEY
 from app.auth import verify_token_health, return_token, return_token_type
@@ -83,14 +85,30 @@ def token_health_check(payload: dict = Depends(verify_token_health)):
     
     if payload['type'] == 'company':
 
+        company = select_company_health_jwt(payload["sub"])
+
+        if not company:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, 
+                detail={"msg": "User or passwords incorrects!"}
+            )
+
         return JSONResponse(
-            content={'msg': 'token is valid', 'type': 'company'},
+            content={'msg': 'token is valid', 'type': 'company', 'company': company},
             status_code=status.HTTP_200_OK
             )
         
     if payload['type'] == 'employee':
+        
+        employee = select_employee_health_jwt(payload["sub"])
+
+        if not employee:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, 
+                detail={"msg": "User or passwords incorrects!"}
+            )
 
         return JSONResponse(
-            content={'msg': 'token is valid', 'type': 'employee'},
+            content={'msg': 'token is valid', 'type': 'employee', 'employee': employee},
             status_code=status.HTTP_200_OK
             )
