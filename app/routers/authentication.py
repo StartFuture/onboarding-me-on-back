@@ -1,5 +1,5 @@
 from jose import jwt
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from datetime import datetime, timedelta
@@ -9,7 +9,7 @@ from app.dao.dao_company import verify_company_exists_by_email, select_company_h
 from app.dao.dao_employee import verify_employee_exists_by_email, select_employee_health_jwt
 from app.dao.dao_auth import insert_revoked_tokens
 from app.parameters import ACCESS_TOKEN_EXPIRES, ALGORITHM, SECRET_KEY
-from app.auth import verify_token_health, return_token
+from app.auth import verify_token_health, return_token, return_token_type
 
 
 router = APIRouter(
@@ -22,25 +22,23 @@ router = APIRouter(
 
 
 @router.post("/login")
-def login(user: OAuth2PasswordRequestForm = Depends(), type: str = Query(pattern=r'company|employee', description="User type")):
+def login(user: OAuth2PasswordRequestForm = Depends()):
+    
+    
+    type, userdata = return_token_type(user.username)
     
     
     if type == 'company':
         
-        company_user = verify_company_exists_by_email(user.username)
-        
-        if not company_user:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={"msg": "User or passwords incorrects!"})
-        
-        valid_password = validate_password(password=user.password, password_hash=company_user['company_password'])
+        valid_password = validate_password(password=user.password, password_hash=userdata['company_password'])
         
         if not valid_password:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={"msg": "User or passwords incorrects!"})
 
         payload = {
-            'company': company_user['id'],
-            'email': company_user['email'],
-            'sub': str(company_user['id']),
+            'company': userdata['id'],
+            'email': userdata['email'],
+            'sub': str(userdata['id']),
             'exp': datetime.utcnow() + timedelta(days=int(ACCESS_TOKEN_EXPIRES)),
             'type': 'company'
         }
@@ -51,20 +49,15 @@ def login(user: OAuth2PasswordRequestForm = Depends(), type: str = Query(pattern
 
     if type == 'employee':
         
-        employee_user = verify_employee_exists_by_email(user.username)
-        
-        if not employee_user:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={"msg": "User or passwords incorrects!"})
-        
-        valid_password = validate_password(password=user.password, password_hash=employee_user['employee_password'])
+        valid_password = validate_password(password=user.password, password_hash=userdata['employee_password'])
         
         if not valid_password:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={"msg": "User or passwords incorrects!"})
 
         payload = {
-            'company': employee_user['company_id'],
-            'email': employee_user['email'],
-            'sub': str(employee_user['id']),
+            'company': userdata['company_id'],
+            'email': userdata['email'],
+            'sub': str(userdata['id']),
             'exp': datetime.utcnow() + timedelta(days=int(ACCESS_TOKEN_EXPIRES)),
             'type': 'employee'
         }

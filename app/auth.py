@@ -11,6 +11,26 @@ from app.parameters import ALGORITHM, SECRET_KEY
 oauth = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
+
+def return_token_type(username: str):
+    
+    company_user = verify_company_exists_by_email(username)
+    
+    if company_user:
+        usertype = 'company'
+        
+        return usertype, company_user
+    
+    employee_user = verify_employee_exists_by_email(username)
+        
+    if employee_user:
+        usertype = 'employee'
+        
+        return usertype, employee_user   
+
+    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={"msg": "User or passwords incorrects!"})
+
+
 def return_token(token: dict = Depends(oauth)):
     
     payload = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
