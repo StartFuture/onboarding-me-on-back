@@ -38,13 +38,15 @@ def get_company_id(quiz_id: int = None, tool_id: int = None):
         query = f"""
         SELECT c.id FROM Quiz q LEFT JOIN Game g ON q.game_id = g.id LEFT JOIN GamifiedJourney gj ON g.gamified_journey_id = gj.id
         LEFT JOIN Company c ON gj.company_id = c.id
-        WHERE q.id = {quiz_id};
+        WHERE q.id = {quiz_id}
+        ;
         """
     else:
         query = f"""
         SELECT c.id FROM Tool t LEFT JOIN Game g ON t.game_id = g.id LEFT JOIN GamifiedJourney gj ON g.gamified_journey_id = gj.id
         LEFT JOIN Company c ON gj.company_id = c.id
-        WHERE t.id = {tool_id};
+        WHERE t.id = {tool_id}
+        ;
         """
     
     try:
@@ -68,7 +70,8 @@ def insert_company(company: Company):
     INSERT INTO Company
     (company_name, trading_name, logo, cnpj, email, company_password, state_register)
     VALUES
-    (%s, %s, %s, %s, %s, %s, %s);
+    (%s, %s, %s, %s, %s, %s, %s)
+    ;
     """
     
     params = (company.name, company.trading_name, company.logo, company.cnpj, company.email, company.password, company.state_register)
@@ -118,7 +121,8 @@ def delete_company(company_id: int):
     
     query = f"""
     DELETE FROM onboarding_me.Company
-    WHERE id = {company_id};
+    WHERE id = {company_id}
+    ;
     """
     
     try:
@@ -141,7 +145,8 @@ def verify_company_exists_by_email(company_email: str):
     query = f"""
     SELECT id, company_password, email
     FROM Company c 
-    WHERE c.email = '{company_email}';
+    WHERE c.email = '{company_email}'
+    ;
     """
     
     try:

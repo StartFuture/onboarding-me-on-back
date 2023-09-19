@@ -10,7 +10,7 @@ from app.schemas.track_kit import TrackKitCreate
 router = APIRouter(
     prefix="/track_kit",
     tags=[
-        "kit"
+        "tracking"
     ]
 )
 

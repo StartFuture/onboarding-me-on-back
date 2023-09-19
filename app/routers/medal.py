@@ -1,8 +1,6 @@
 from fastapi import APIRouter,status, HTTPException
 from fastapi.responses import JSONResponse
 
-
-
 from app.dao import dao_medal as dao
 from app.dao.dao_quiz import verify_if_game_id_exists
 

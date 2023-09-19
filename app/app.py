@@ -11,6 +11,7 @@ from app.routers.track_kit import router as track_kit
 from app.routers.medal import router as router_medal
 from app.routers.authentication import router as router_login
 from app.routers.password_edit import router as router_password_edit
+from app.routers.address import router as router_address
 
 
 app = FastAPI()
@@ -35,13 +36,14 @@ app.add_middleware(
 )
 
 
+app.include_router(router=router_login)
+app.include_router(router=router_password_edit)
 app.include_router(router=router_company)
+app.include_router(router=router_gamified_journey)
+app.include_router(router=router_medal)
 app.include_router(router=router_tool)
 app.include_router(router=router_quiz)
 app.include_router(router=router_employee)
-app.include_router(router=router_gamified_journey)
-app.include_router(router=router_welcome_kit)
+app.include_router(router=router_address)
 app.include_router(router=track_kit)
-app.include_router(router=router_medal)
-app.include_router(router=router_login)
-app.include_router(router=router_password_edit)
+app.include_router(router=router_welcome_kit)
