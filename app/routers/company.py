@@ -15,14 +15,9 @@ router = APIRouter(
 
 
 @router.get("/")
-def get_company(company_id: int):
+def get_company(payload: dict = Depends(verify_token_company)):
     
-    company_exists = dao.verify_if_company_exists(company_id)
-    
-    if not company_exists:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "Company dont exists!"})
-    
-    company = dao.select_company(company_id)
+    company = dao.select_company(payload['sub'])
     
     if company:
         return JSONResponse(status_code=status.HTTP_200_OK, content=company)
@@ -50,15 +45,11 @@ def create_company(company: Company):
     
     
 @router.put("/update")
-def modify_company(company: Company, token: dict = Depends(verify_token_company)):
-    
-    company_exists = dao.verify_if_company_exists(company.company_id)
-    
-    if not company_exists:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"msg": "Company dont exists!"})
+def modify_company(company: Company, payload: dict = Depends(verify_token_company)):
     
     company.password = create_hash(company.password)
     company.cnpj = company.cnpj.replace('-', '').replace('/', '').replace('.', '')
+    company.company_id = payload['sub']
     
     company_updated = dao.update_company(company)
     
@@ -69,14 +60,9 @@ def modify_company(company: Company, token: dict = Depends(verify_token_company)
 
     
 @router.delete("/delete")
-def del_company(company_id: int):
+def del_company(payload: dict = Depends(verify_token_company)):
     
-    company_exists = dao.verify_if_company_exists(company_id)
-    
-    if not company_exists:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"msg": "Company dont exists!"})
-    
-    company_deleted = dao.delete_company(company_id)
+    company_deleted = dao.delete_company(payload['sub'])
     
     if company_deleted:
         return JSONResponse(status_code=status.HTTP_201_CREATED, content={"msg": "Successfully deleted"})

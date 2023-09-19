@@ -11,7 +11,7 @@ def select_video_company(company_id: int):
 
     try:
         cursor.execute(query)
-    except:
+    except Exception as error:
         video_company = None
     else:
         video_company = cursor.fetchone()
@@ -35,11 +35,12 @@ def insert_video_company(company_id: int, link: str):
     """
     try:
         cursor.execute(query)
-    except TypeError:
-        return TypeError
+    except Exception as error:
+        return False
     finally:
         connection.commit()
         connection.close()
+        return True
 
 def modify_video_company(company_id: int, new_link: str):
     
