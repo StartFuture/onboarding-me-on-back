@@ -2,7 +2,7 @@ from fastapi import APIRouter,status, HTTPException
 from fastapi.responses import JSONResponse
 
 from app.dao import dao_medal as dao
-from app.dao.dao_quiz import verify_if_game_id_exists
+from app.dao.dao_quiz import verify_if_game_id_exists_quiz
 
 router = APIRouter(
     prefix="/medal",
@@ -26,7 +26,7 @@ def get_medal(id, game_id: int):
 @router.post("/register")
 def create_medal(name, image: str, game_id: int):
     
-    game_id_exists = verify_if_game_id_exists(game_id=game_id)
+    game_id_exists = verify_if_game_id_exists_quiz(game_id=game_id)
     
     if not game_id_exists:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"msg": "This game_id not exists!"})

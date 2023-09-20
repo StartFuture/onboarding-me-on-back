@@ -466,7 +466,7 @@ def get_max_score(game_id: int):
         return max_score_value
 
 
-def verify_if_game_id_exists(quiz: Quiz = None, game_id: int = None):
+def verify_if_game_id_exists_quiz(quiz: Quiz = None, game_id: int = None):
 
     connection, cursor = connect_database()
 
@@ -497,9 +497,13 @@ def verify_if_game_id_exists(quiz: Quiz = None, game_id: int = None):
 
     else:
         game_id_exists = cursor.fetchone()
+
         connection.close()
 
-        return game_id_exists
+        if not game_id_exists:
+            return False
+
+        return bool(game_id_exists["id"])
 
 
 def verify_if_quiz_id_exists(company_id: int, quiz: Quiz = None, quiz_id: int = None):
