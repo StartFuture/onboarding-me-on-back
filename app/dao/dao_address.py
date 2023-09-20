@@ -2,14 +2,14 @@ from app.dao.dao import connect_database
 from app.schemas.address import Address
 
 
-def select_address(address_id: int):
+def select_address(employee_id: int):
     
     connection, cursor = connect_database()
     
     query = f"""
-    SELECT *
-    from Address c 
-    WHERE id = {address_id}
+    SELECT a.num, a.complement, a.zipcode, a.street, a.district, a.city, a.state  FROM onboarding_me.Address a
+    LEFT JOIN Employee e ON e.address_id = a.id
+    WHERE e.id = {employee_id}
     ;
     """
 
@@ -102,16 +102,27 @@ def delete_address(address_id: int):
         return True    
     
     
-def verify_if_address_exists_by_id(address_id: int):
+def verify_if_address_exists(employee_id: int = None, address_id: int = None):
     
     connection, cursor = connect_database()
     
-    query = f"""
-    SELECT id
-    FROM onboarding_me.Address
-    WHERE id = {address_id}
-    ;
-    """
+    if employee_id:
+        
+        query = f"""
+        SELECT a.num FROM Address a 
+        LEFT JOIN Employee e ON e.address_id = a.id
+        WHERE e.id = {employee_id}
+        ;
+        """
+    
+    if address_id:
+        
+        query = f"""
+        SELECT id
+        FROM onboarding_me.Address
+        WHERE id = {address_id}
+        ;
+        """
     
     try:
         cursor.execute(query)
