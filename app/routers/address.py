@@ -48,10 +48,12 @@ def get_address_by_company(employee_id: int, payload: dict = Depends(verify_toke
 @router.post("/register")
 def create_address(address: Address, payload: dict = Depends(verify_token_employee_or_company)):
     
-    address_exists = dao.verify_if_address_exists_by_house(address.num, address.street)
+    addresses = dao.verify_if_address_exists_by_house(company_id=payload['company'])
     
-    if address_exists:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"msg": "Address already exists!"})
+    for address_data in addresses:
+        if address_data['num'] == address.num and address_data['street'] == address.street:
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"msg": "Address already exists!"})
+        
     
     address.zipcode = address.zipcode.replace('-', '')
 
@@ -66,9 +68,14 @@ def create_address(address: Address, payload: dict = Depends(verify_token_employ
 @router.put("/update")
 def modify_address(address: Address, payload: dict = Depends(verify_token_employee_or_company)):
     
-    address_exists = dao.verify_if_address_exists(address_id=address.address_id)
+    addresses_list = []
     
-    if not address_exists:
+    addresses = dao.return_company_addresses(payload['company'])
+    
+    for address_id in addresses:
+        addresses_list.append(address_id['id'])
+    
+    if address.address_id not in addresses_list:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"msg": "Address does not exists!"})
 
     address.zipcode = address.zipcode.replace('-', '')
@@ -84,9 +91,14 @@ def modify_address(address: Address, payload: dict = Depends(verify_token_employ
 @router.delete("/delete")
 def del_address(address_id: int, payload: dict = Depends(verify_token_company)):
     
-    address_exists = dao.verify_if_address_exists(address_id=address_id)
+    addresses_list = []
     
-    if not address_exists:
+    addresses = dao.return_company_addresses(payload['company'])
+    
+    for address in addresses:
+        addresses_list.append(address['id'])
+        
+    if address_id not in addresses_list:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"msg": "Address does not exists!"})
     
     address_deleted = dao.delete_address(address_id)
