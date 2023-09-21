@@ -482,8 +482,7 @@ def verify_if_game_id_exists(quiz: Quiz = None, game_id: int = None):
     if game_id:
 
         query = f"""
-        SELECT g.id FROM Quiz q
-        left join Game g on g.id = q.game_id 
+        SELECT g.id FROM Game g
         WHERE g.id = {game_id}  
         ;
         """
@@ -500,6 +499,31 @@ def verify_if_game_id_exists(quiz: Quiz = None, game_id: int = None):
         connection.close()
 
         return game_id_exists
+    
+    
+def verify_if_game_exists_in_company(company_id: int):
+
+    connection, cursor = connect_database()
+
+    query = f"""
+    SELECT g.id  FROM onboarding_me.Game g
+    LEFT JOIN GamifiedJourney gj ON g.gamified_journey_id = gj.id 
+    LEFT JOIN Company c ON c.id = gj.company_id 
+    WHERE c.id = {company_id}
+    """
+
+    try:
+        cursor.execute(query)
+
+    except Exception as error:
+        connection.close()
+        return False
+
+    else:
+        game_id_list = cursor.fetchall()
+        connection.close()
+
+        return game_id_list
 
 
 def verify_if_quiz_id_exists(company_id: int, quiz: Quiz = None, quiz_id: int = None):

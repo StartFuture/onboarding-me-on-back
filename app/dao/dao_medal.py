@@ -1,14 +1,16 @@
 from app.dao.dao import connect_database
 
 
-def select_medal(medal_id, game_id: int):
+def select_medals(company_id: int):
 
     connection, cursor = connect_database()
 
     query = f"""
-    SELECT name, image, game_id
-    FROM onboarding_me.Medal
-    WHERE id = {medal_id} and game_id = {game_id}
+    SELECT m.id, m.name, m.image  FROM onboarding_me.Medal m
+    LEFT JOIN Game g ON m.game_id = g.id 
+    LEFT JOIN GamifiedJourney gj ON g.gamified_journey_id = gj.id 
+    LEFT JOIN Company c ON c.id = gj.company_id 
+    WHERE c.id = {company_id}
     ;
     """
 
@@ -20,13 +22,14 @@ def select_medal(medal_id, game_id: int):
         return None
     
     else:
-        medal_data = cursor.fetchone()
+        medals_data = cursor.fetchall()
         connection.close()
         
-        if medal_data:
-            medal_data["image"] = medal_data["image"].decode('utf-8')
+        if medals_data:
+            for medal in medals_data:
+                medal["image"] = medal["image"].decode('utf-8')
 
-        return medal_data
+        return medals_data
     
     
 def insert_medal(name, image: str, game_id: int):
