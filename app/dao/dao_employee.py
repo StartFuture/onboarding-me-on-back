@@ -171,6 +171,31 @@ def insert_employee_answer(employee_alternative: EmployeeAlternative):
 
         return True
 
+def select_feedback(employee_id: int):
+    
+    connection, cursor = connect_database()
+
+    query = f"""
+    SELECT ef.grade,ef.message, ef.feedback_type FROM Employee_Feedback ef
+    LEFT JOIN Employee e ON e.id = ef.employee_id 
+    LEFT JOIN Company c ON c.id = e.company_id 
+    WHERE e.id = {employee_id};
+    """
+
+    try:
+        cursor.execute(query)
+    
+    except Exception as error:
+        connection.close()
+
+        return None
+    
+    else:
+        feedback = cursor.fetchall()
+
+        connection.close()
+
+        return feedback
 
 def get_employee_answer(employee_id: int):
     
@@ -195,6 +220,7 @@ def get_employee_answer(employee_id: int):
         return feedback_list
 
 def insert_feedback(feedback_employee: FeedBackEmployee):
+
     connection, cursor = connect_database()
 
     query = f"""
@@ -202,6 +228,21 @@ def insert_feedback(feedback_employee: FeedBackEmployee):
     (employee_id, grade, message, feedback_type)
     VALUES({feedback_employee.employee_id}, {feedback_employee.grade}, '{feedback_employee.message}', '{feedback_employee.feedback_type}');
     """
+
+    try:
+        cursor.execute(query)
+    
+    except Exception as error:
+        connection.close()
+
+        return False
+    
+    else:
+        connection.commit()
+
+        connection.close()
+
+        return True
      
      
 def get_game_id_quiz(alternative_id = int):
@@ -524,6 +565,31 @@ def get_medals_by_employee_id(employee_id: int):
         connection.close()
 
         return medals_employee
+
+
+def get_score_id_by_game_employee(game_id: int, employee_id: int):
+
+    connection, cursor = connect_database()
+
+    query = f"""
+    SELECT s.id FROM Score s
+    WHERE s.employee_id = {employee_id} AND s.game_id = {game_id};
+    """
+
+    try:
+        cursor.execute(query)
+    
+    except Exception as error:
+        connection.close()
+
+        return None
+    
+    else:
+        score_id = cursor.fetchone()
+
+        connection.close()
+
+        return score_id["id"]
     
 
 def verify_employee_exists(employee_id: int):
@@ -660,3 +726,28 @@ def verify_employee_exists_by_email(employee_email: str):
         connection.close()
     
         return user_exists
+
+
+def verify_feedback_exists(feedback: FeedBackEmployee):
+
+    connection, cursor = connect_database()
+
+    query = f"""
+    SELECT * FROM Employee_Feedback ef
+    WHERE ef.employee_id = {feedback.employee_id} AND ef.feedback_type = '{feedback.feedback_type}';
+    """
+
+    try:
+        cursor.execute(query)
+    
+    except Exception as error:
+        connection.close()
+
+        return False
+    
+    else:
+        feedback = cursor.fetchone()
+
+        connection.close()
+
+        return bool(feedback)
