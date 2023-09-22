@@ -13,6 +13,6 @@ class Tool(BaseModel):
 
 class EmployeeTool(BaseModel):
     employee_tool_id: Optional[int] = None
-    employee_id: int
+    employee_id: Optional[int] = None
     tool_id: int
     nick_name: str

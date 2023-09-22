@@ -172,16 +172,6 @@ def insert_employee_answer(employee_alternative: EmployeeAlternative):
 
         return True
 
-def select_feedback_company(company_id: int):
-    
-    connection, cursor = connect_database()
-
-    query = f"""
-    SELECT ef.employee_id, ef.grade,ef.message, ef.feedback_type FROM Employee_Feedback ef
-    LEFT JOIN Employee e ON e.id = ef.employee_id 
-    LEFT JOIN Company c ON c.id = e.company_id 
-    WHERE c.id = {company_id}
-    """
 
 def get_employee_answer(employee_id: int):
     

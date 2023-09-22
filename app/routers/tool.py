@@ -1,11 +1,13 @@
-from fastapi import APIRouter,status, HTTPException
+from fastapi import APIRouter,status, HTTPException, Depends
 from fastapi.responses import JSONResponse
 
 from app.dao import dao_tools as dao
 from app.dao import dao_company
+from app.dao import dao_gamified_journey
 from app.schemas.category_tool import CategoryTool
 from app.schemas.tool import Tool, EmployeeTool
 from app import utils
+from app.auth import verify_token_company, verify_token_employee, verify_token_employee_or_company
 
 
 router = APIRouter(
@@ -16,23 +18,31 @@ router = APIRouter(
         )
 
 @router.get("/")
-def get_tools(company_id: int):
+def get_tools(payload: dict = Depends(verify_token_employee_or_company)):
     
-    company_exists = dao_company.verify_if_company_exists(company_id)
-    
-    if not company_exists:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "This company don't exists!"})
-    
-    tool = dao.select_tools(company_id)
-    
-    if tool:
-        return JSONResponse(status_code=status.HTTP_200_OK, content=tool)
-    else:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "This company don't have tools!"})    
+    if payload["type"] == 'company':
+
+        tool = dao.select_tools(payload["sub"])
+        
+        if tool:
+            return JSONResponse(status_code=status.HTTP_200_OK, content=tool)
+        else:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "This company don't have tools!"})
+
+    if payload["type"] == 'employee':
+
+        tool = dao.select_tools(payload["company"])
+        
+        if tool:
+            return JSONResponse(status_code=status.HTTP_200_OK, content=tool)
+        else:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "This company don't have tools!"})
+
+
 
 
 @router.post("/register") 
-def register_tool(tool: Tool):
+def register_tool(tool: Tool, payload: dict = Depends(verify_token_company)):
 
     tool.name = utils.string_to_lower(tool.name)
     tool_exists = dao.verify_tool_exists(name=tool.name)
@@ -49,7 +59,7 @@ def register_tool(tool: Tool):
 
 
 @router.put("/update")
-def modify_tool(tool: Tool):
+def modify_tool(tool: Tool,  payload: dict = Depends(verify_token_company)):
 
     tool_exists = dao.verify_tool_exists(id_tool=tool.id_tool)
     tool.name = utils.string_to_lower(tool.name)
@@ -69,14 +79,14 @@ def modify_tool(tool: Tool):
      
     
 @router.delete("/delete")
-def del_tool(tool_id: int, game_id: int):   
+def del_tool(tool_id: int, payload: dict = Depends(verify_token_company)):   
     
     tool_exists = dao.verify_tool_exists(id_tool=tool_id)
-     
+
     if not tool_exists:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "This tool dont exists!"})
     
-    tool_deleted = dao.delete_tool(tool_id=tool_id, game_id=game_id)
+    tool_deleted = dao.delete_tool(tool_id=tool_id)
     
     if tool_deleted:
         return JSONResponse(status_code=status.HTTP_200_OK, content={"msg": "The tool has been deleted!"})
@@ -85,7 +95,7 @@ def del_tool(tool_id: int, game_id: int):
     
     
 @router.post("/category/register")
-def register_category_tool(category_tool: CategoryTool):
+def register_category_tool(category_tool: CategoryTool, payload: dict = Depends(verify_token_company)):
 
     category_exists = dao.verify_if_category_exists(category_name=category_tool.name)
     
@@ -101,7 +111,7 @@ def register_category_tool(category_tool: CategoryTool):
     
     
 @router.put("/category/update")
-def modify_category_tool(category_tool: CategoryTool):
+def modify_category_tool(category_tool: CategoryTool, payload: dict = Depends(verify_token_company)):
     
     category_exists = dao.verify_if_category_exists(category_id=category_tool.category_tool_id)
     
@@ -123,14 +133,14 @@ def modify_category_tool(category_tool: CategoryTool):
     
     
 @router.delete("/category/delete")
-def del_category_tool(category_tool_id: int, company_id: int):
+def del_category_tool(category_tool_id: int, payload: dict = Depends(verify_token_company)):
     
     category_exists = dao.verify_if_category_exists(category_id=category_tool_id)
     
     if not category_exists:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={"msg": "The category dont exists!"})
     
-    category_deleted = dao.delete_category_tool(category_tool_id=category_tool_id, company_id=company_id)
+    category_deleted = dao.delete_category_tool(category_tool_id=category_tool_id, company_id=payload["sub"])
 
     if category_deleted:
         return JSONResponse(status_code=status.HTTP_200_OK, content={"msg": "The category has been deleted!"})
@@ -139,7 +149,9 @@ def del_category_tool(category_tool_id: int, company_id: int):
     
 
 @router.post("/linking")
-def complete_tool(employee_tool: EmployeeTool):
+def complete_tool(employee_tool: EmployeeTool, payload: dict = Depends(verify_token_employee)):
+
+    employee_tool.employee_id = payload["sub"]
 
     tool_exists = dao.verify_tool_exists(id_tool=employee_tool.tool_id)
 
@@ -176,14 +188,16 @@ def complete_tool(employee_tool: EmployeeTool):
 
 
 @router.get("/game/")
-def game_tools_completed(gamefied_journey_id: int, employee_id: int):
+def game_tools_completed(payload: dict = Depends(verify_token_employee)):
 
-    tool_count = dao.get_count_tools(gamefied_journey_id)
+    gamified_journey_id = dao_gamified_journey.select_gamified_journey_id_by_company(payload["company"])
+
+    tool_count = dao.get_count_tools(gamified_journey_id)
 
     if not tool_count:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "The tools were not found! "})
     
-    game_tools_completed = dao.ended_game_tools(employee_id)
+    game_tools_completed = dao.ended_game_tools(payload["sub"])
 
     if not game_tools_completed:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "The completed tools were not found!"})

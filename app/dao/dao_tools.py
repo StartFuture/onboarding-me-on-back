@@ -79,7 +79,7 @@ def update_tool(tool: Tool):
         return True
 
 
-def delete_tool(tool_id : int, game_id: int):
+def delete_tool(tool_id : int):
 
     connection, cursor = connect_database()
     
@@ -93,8 +93,7 @@ def delete_tool(tool_id : int, game_id: int):
 
     query = f"""
     DELETE FROM Tool
-    WHERE game_id = {game_id} and id = {tool_id}
-    ;
+    WHERE id = {tool_id};
     """
     
     try:
@@ -547,8 +546,8 @@ def ended_game_tools(employee_id: int):
     connection, cursor = connect_database()
 
     query = f"""
-    SELECT COUNT(et.id) FROM Employee e LEFT JOIN 
-    Employee_Tool et ON et.employee_id = {employee_id};
+    SELECT COUNT(et.id) FROM Employee_Tool et
+    WHERE et.employee_id = {employee_id};
     """
 
     try:
