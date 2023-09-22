@@ -1,18 +1,31 @@
 from app.dao.dao import connect_database
 from app.dao.dao_track_kit import insert_pack
 
-def select_welcome_kit(employee_id: int):
+def select_welcome_kit(employee_id: int = None, company_id: int = None):
     
     connection, cursor  = connect_database()
     
-    query = f"""
-    SELECT wk.name, wk.image
-    FROM WelcomeKit wk
-    LEFT JOIN Tracking t ON t.welcome_kit_id = wk.id 
-    LEFT JOIN Employee e ON t.employee_id = e.id 
-    WHERE e.id = {employee_id}
-    ;
-    """
+    if employee_id:
+        
+        query = f"""
+        SELECT wk.name, wk.image
+        FROM WelcomeKit wk
+        LEFT JOIN Tracking t ON t.welcome_kit_id = wk.id 
+        LEFT JOIN Employee e ON t.employee_id = e.id 
+        WHERE e.id = {employee_id}
+        ;
+        """
+        
+    if company_id:
+        
+        query = f"""
+        SELECT wk.id, wk.name, wk.image FROM WelcomeKit wk
+        LEFT JOIN Tracking t ON t.welcome_kit_id = wk.id 
+        LEFT JOIN Employee e ON t.employee_id = e.id 
+        LEFT JOIN Company c ON c.id = e.company_id 
+        WHERE c.id = {company_id}
+        ;
+        """
     
     try:
         cursor.execute(query)
@@ -23,26 +36,44 @@ def select_welcome_kit(employee_id: int):
     
     else:
         
-        welcome_kit = cursor.fetchone()
+        welcome_kits = cursor.fetchall()
         connection.close()
         
-        if welcome_kit:
-            welcome_kit['image'] = welcome_kit['image'].decode('utf-8')
+        if welcome_kits:
+            for item in welcome_kits:
+                item['image'] = item['image'].decode('utf-8')
         
-        return welcome_kit
+        return welcome_kits
     
     
-def select_welcome_kit_item(welcome_kit_id: int, item_id: int):
+def select_welcome_kit_item(employee_id: int = None, company_id: int = None):
     
     connection, cursor  = connect_database()
     
-    query = f"""
-    SELECT wki.name, wki.image 
-    FROM WelcomeKit_WelcomeKitItem wkwki
-    RIGHT JOIN WelcomeKitItem wki ON wki.id = wkwki.item_id 
-    WHERE wkwki.welcome_kit_id = {welcome_kit_id} AND wkwki.item_id = {item_id}
-    ;
-    """
+    if employee_id:
+        
+        query = f"""
+        SELECT wki.name, wki.image  FROM Tracking t
+        RIGHT JOIN WelcomeKit wk  ON wk.id = t.welcome_kit_id 
+        RIGHT JOIN WelcomeKit_WelcomeKitItem wkwki ON wk.id = wkwki.welcome_kit_id 
+        RIGHT JOIN WelcomeKitItem wki ON wki.id = wkwki.item_id
+        WHERE t.employee_id = {employee_id}
+        ;
+        """
+    
+    if company_id:
+        
+        query = f"""
+        SELECT wki.id, wki.name, wki.image FROM WelcomeKitItem wki 
+        LEFT JOIN WelcomeKit_WelcomeKitItem wkwki ON wkwki.item_id = wki.id
+        LEFT JOIN WelcomeKit wk ON wk.id = wkwki.welcome_kit_id 
+        LEFT JOIN Tracking t ON t.welcome_kit_id = wk.id 
+        LEFT JOIN Employee e ON t.employee_id = e.id 
+        LEFT JOIN Company c ON c.id = e.company_id 
+        WHERE c.id = {company_id}
+        ;
+        """
+    
     
     try:
         cursor.execute(query)
@@ -53,16 +84,17 @@ def select_welcome_kit_item(welcome_kit_id: int, item_id: int):
     
     else:
         
-        welcome_kit_item= cursor.fetchone()
+        welcome_kit_items = cursor.fetchall()
         connection.close()
         
-        if welcome_kit_item:
-            welcome_kit_item['image'] = welcome_kit_item['image'].decode('utf-8')
+        if welcome_kit_items:
+            for item in welcome_kit_items:
+                item['image'] = item['image'].decode('utf-8')
         
-        return welcome_kit_item
+        return welcome_kit_items
     
 
-async def insert_welcome_kit(welcome_kit_name: str = None, welcome_kit_image: str = None, kit_item_name: str = None, kit_item_image: str = None, employee_id: int = None):    
+def insert_welcome_kit(welcome_kit_name: str = None, welcome_kit_image: str = None, kit_item_name: str = None, kit_item_image: str = None, employee_id: int = None):    
 
     connection, cursor  = connect_database()
     
@@ -318,7 +350,7 @@ def delete_welcome_kit(welcome_kit_id: int):
         return True   
     
     
-async def update_welcome_kit(welcome_kit_id: int, welcome_kit_name: str, welcome_kit_image: str):
+def update_welcome_kit(welcome_kit_id: int, welcome_kit_name: str, welcome_kit_image: str):
     
     connection, cursor = connect_database()
     
@@ -359,7 +391,7 @@ async def update_welcome_kit(welcome_kit_id: int, welcome_kit_name: str, welcome
         return True
 
 
-async def update_welcome_kit_item(kit_id: int, kit_item_name: str, welcome_kit_item_image: str):
+def update_welcome_kit_item(kit_id: int, kit_item_name: str, welcome_kit_item_image: str):
     
     connection, cursor = connect_database()
     
@@ -444,7 +476,7 @@ def verify_if_welcome_kit_item_exists(kit_item_id: int):
     return False
     
       
-def verify_if_welcome_kit_exists(employee_id: int = None, welcome_kit_id: int = None):
+def verify_if_welcome_kit_exists(employee_id: int = None, welcome_kit_id: int = None, company_id: int = None):
     
     connection, cursor = connect_database()
     
@@ -455,6 +487,17 @@ def verify_if_welcome_kit_exists(employee_id: int = None, welcome_kit_id: int = 
         LEFT JOIN Tracking t ON t.welcome_kit_id = wk.id 
         LEFT JOIN Employee e ON t.employee_id = e.id 
         WHERE e.id = {employee_id}
+        ;
+        """
+        
+    if company_id:
+        
+        query = f"""
+        SELECT wk.name, wk.image  FROM WelcomeKit wk
+        LEFT JOIN Tracking t ON t.welcome_kit_id = wk.id 
+        LEFT JOIN Employee e ON t.employee_id = e.id 
+        LEFT JOIN Company c ON c.id = e.company_id 
+        WHERE c.id = {company_id}
         ;
         """
     

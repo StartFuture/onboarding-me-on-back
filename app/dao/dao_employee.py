@@ -83,7 +83,6 @@ def insert_employee(employee: Employee):
         cursor.execute(query, params)
 
     except Exception as error:
-        print(error)
         connection.close()
         return False
 
