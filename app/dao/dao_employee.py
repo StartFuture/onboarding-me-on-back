@@ -146,6 +146,28 @@ def delete_employee(employee_id: int):
         return True    
     
     
+def delete_employees(employee_ids: list):
+    
+    connection, cursor = connect_database()
+    
+    placeholder = ','.join(['%s'] * len(employee_ids))
+
+    query = f"""
+    DELETE FROM onboarding_me.Employee
+    WHERE id IN ({placeholder});
+    """
+    
+    try:
+        cursor.execute(query, employee_ids)
+    except Exception as error:
+        connection.close()
+        return False
+    else:
+        connection.commit()
+        connection.close()
+        return True
+
+    
 def insert_employee_answer(employee_alternative: EmployeeAlternative):
 
     connection, cursor = connect_database()
