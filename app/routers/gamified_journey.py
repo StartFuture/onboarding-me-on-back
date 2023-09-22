@@ -18,7 +18,7 @@ router = APIRouter(
 
 @router.get("/get-video")
 def get_video_company(payload: str = Depends(verify_token_employee_or_company)):
-    
+
     video = select_video_company(company_id=payload['company'])
     
     if not video:

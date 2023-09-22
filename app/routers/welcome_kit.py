@@ -1,8 +1,8 @@
-from fastapi import APIRouter, status, HTTPException
+from fastapi import APIRouter, status, HTTPException, Depends
 from fastapi.responses import JSONResponse
 
 from app.dao import dao_welcomekit as dao
-
+from app.auth import verify_token_employee, verify_token_company
 
 
 router = APIRouter(
@@ -14,14 +14,14 @@ router = APIRouter(
 
 
 @router.get("/welcomekit")
-def get_welcome_kit(employee_id: int):
+def get_welcome_kit_employee(payload: dict = Depends(verify_token_employee)):
     
-    welcome_kit_exists = dao.verify_if_welcome_kit_exists(employee_id=employee_id)
+    welcome_kit_exists = dao.verify_if_welcome_kit_exists(employee_id=payload['sub'])
     
     if not welcome_kit_exists:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"msg": "This welcome kit does not exists!"})
     
-    welcome_kit= dao.select_welcome_kit(employee_id)
+    welcome_kit= dao.select_welcome_kit(employee_id=payload['sub'])
     
     if not welcome_kit:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "welcome kit not found!"})
@@ -29,15 +29,37 @@ def get_welcome_kit(employee_id: int):
     return JSONResponse(status_code=status.HTTP_200_OK, content=welcome_kit)
  
     
-@router.get("/welcomekit-item-name")    
-def get_welcome_kit_item(welcome_kit_id: int, item_id: int):
+@router.get("/welcomekit-item")    
+def get_welcome_kit_item_employee(payload: dict = Depends(verify_token_employee)):
     
-    welcome_kit_exists = dao.verify_if_welcome_kit_exists(welcome_kit_id=welcome_kit_id)
+    welcome_kit_item= dao.select_welcome_kit_item(employee_id=payload['sub'])
+    
+    if not welcome_kit_item:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "Welcome kit item not found"})
+    
+    return JSONResponse(status_code=status.HTTP_200_OK, content=welcome_kit_item)
+
+
+@router.get("/welcomekit/company")
+def get_welcome_kit_company(payload: dict = Depends(verify_token_company)):
+    
+    welcome_kit_exists = dao.verify_if_welcome_kit_exists(company_id=payload['sub'])
     
     if not welcome_kit_exists:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"msg": "This welcome kit does not exists!!"})
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"msg": "This welcome kit does not exists!"})
     
-    welcome_kit_item= dao.select_welcome_kit_item(welcome_kit_id, item_id)
+    welcome_kit= dao.select_welcome_kit(company_id=payload['sub'])
+    
+    if not welcome_kit:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "welcome kit not found!"})
+  
+    return JSONResponse(status_code=status.HTTP_200_OK, content=welcome_kit)
+ 
+    
+@router.get("/welcomekit-item/company")    
+def get_welcome_kit_item_company(payload: dict = Depends(verify_token_company)):
+    
+    welcome_kit_item= dao.select_welcome_kit_item(company_id=payload['sub'])
     
     if not welcome_kit_item:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "Welcome kit item not found"})
@@ -46,9 +68,9 @@ def get_welcome_kit_item(welcome_kit_id: int, item_id: int):
 
 
 @router.post("/register/welcomekit")
-async def register_welcome_kit(name: str, image: str, employee_id: int):
+def register_welcome_kit(name: str, image: str, employee_id: int, payload: dict = Depends(verify_token_company)):
     
-    welcome_kit_registered = await dao.insert_welcome_kit(welcome_kit_name=name, welcome_kit_image=image, employee_id=employee_id)
+    welcome_kit_registered = dao.insert_welcome_kit(welcome_kit_name=name, welcome_kit_image=image, employee_id=employee_id)
     
     if welcome_kit_registered:
         return JSONResponse(status_code=status.HTTP_200_OK, content={"msg": "Successfully registered"})
@@ -57,9 +79,9 @@ async def register_welcome_kit(name: str, image: str, employee_id: int):
 
 
 @router.post("/register/welcomekit-item")
-async def register_welcome_kit_item(welcome_kit_id: int, item_name: str, item_image: str):
+def register_welcome_kit_item(welcome_kit_id: int, item_name: str, item_image: str, payload: dict = Depends(verify_token_company)):
     
-    item_id = await dao.insert_welcome_kit(kit_item_name=item_name, kit_item_image=item_image)
+    item_id = dao.insert_welcome_kit(kit_item_name=item_name, kit_item_image=item_image)
     
     if not item_id:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={"msg": "The welcome kit item has not been registered"})
@@ -73,7 +95,7 @@ async def register_welcome_kit_item(welcome_kit_id: int, item_name: str, item_im
   
         
 @router.delete("/delete")
-def delete_welcomekit(welcome_kit_id: int):
+def delete_welcomekit(welcome_kit_id: int, payload: dict = Depends(verify_token_company)):
      
     welcome_kit_exists = dao.verify_if_welcome_kit_exists(welcome_kit_id=welcome_kit_id)
     
@@ -89,7 +111,7 @@ def delete_welcomekit(welcome_kit_id: int):
     
     
 @router.delete("/delete/item")
-def delete_welcomekit_item(welcome_kit_id: int, item_id: int):
+def delete_welcomekit_item(welcome_kit_id: int, item_id: int, payload: dict = Depends(verify_token_company)):
     
     welcome_kit_exists = dao.verify_if_welcome_kit_exists(welcome_kit_id=welcome_kit_id)
     
@@ -117,14 +139,14 @@ def delete_welcomekit_item(welcome_kit_id: int, item_id: int):
 
 
 @router.put("/update")
-async def modify_welcome_kit(welcome_kit_id: int, welcome_kit_name: str, image: str):
+def modify_welcome_kit(welcome_kit_id: int, welcome_kit_name: str, image: str, payload: dict = Depends(verify_token_company)):
     
     welcome_kit_exists = dao.verify_if_welcome_kit_exists(welcome_kit_id=welcome_kit_id)
     
     if not welcome_kit_exists:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"msg": "This welcome kit does not exists!!"})
     
-    welcome_kit_modified = await dao.update_welcome_kit(welcome_kit_id, welcome_kit_name, image)
+    welcome_kit_modified = dao.update_welcome_kit(welcome_kit_id, welcome_kit_name, image)
     
     if welcome_kit_modified:
         return JSONResponse(status_code=status.HTTP_200_OK, content={"msg": "Successfully updated!"})
@@ -133,14 +155,14 @@ async def modify_welcome_kit(welcome_kit_id: int, welcome_kit_name: str, image: 
         
 
 @router.put("/update/welcome-kit-item")
-async def modify_welcome_kit_item(kit_item_id: int, kit_item_name: str, image: str):
+def modify_welcome_kit_item(kit_item_id: int, kit_item_name: str, image: str, payload: dict = Depends(verify_token_company)):
 
     welcome_kit_item_exists = dao.verify_if_welcome_kit_item_exists(kit_item_id)
     
     if not welcome_kit_item_exists:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"msg": "This welcome kit item does not exists!!"})
 
-    welcome_kit_item_modified = await dao.update_welcome_kit_item(kit_item_id, kit_item_name, image)
+    welcome_kit_item_modified = dao.update_welcome_kit_item(kit_item_id, kit_item_name, image)
     
     if welcome_kit_item_modified:
         return JSONResponse(status_code=status.HTTP_200_OK, content={"msg": "Successfully updated!"})

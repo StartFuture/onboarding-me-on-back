@@ -20,7 +20,7 @@ class Employee(BaseModel):
         
     
 class FeedBackEmployee(BaseModel):
-    employee_id:int 
+    employee_id: Optional[int] = None
     grade: int 
     message: Optional[str] = None
     feedback_type: str = Field(pattern=dict_regex['feedback type pattern'])

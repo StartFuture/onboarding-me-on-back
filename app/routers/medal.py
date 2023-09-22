@@ -26,7 +26,6 @@ def get_medal(payload: str = Depends(verify_token_company)):
 
 @router.post("/register")
 def create_medal(name, image: str, game_id: int, payload: str = Depends(verify_token_company)):
-    
     ids_list = []
     
     game_ids = verify_if_game_exists_in_company(company_id=payload['sub'])

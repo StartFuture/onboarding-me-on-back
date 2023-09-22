@@ -5,7 +5,7 @@ from app import parameters
 
 
 class EmployeeAlternative(BaseModel):
-    employee_id: int
+    employee_id: Optional[int] = None
     alternative_id: int
     
 

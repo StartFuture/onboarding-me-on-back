@@ -3,14 +3,14 @@ from app.schemas.quiz import Quiz, Alternative
 from app.utils import fix_video_link
 
 
-def select_quiz_principle(company_id: int = None):
+def select_quiz_id_principle(company_id: int = None):
 
     connection, cursor = connect_database()
 
     if company_id:
 
         query = f"""
-        SELECT q.* FROM Quiz q
+        SELECT q.id FROM Quiz q
         left join Game g on g.id = q.game_id 
         left join GamifiedJourney gj on gj.id = g.gamified_journey_id 
         left join Company c on c.id = gj.company_id 
@@ -33,14 +33,14 @@ def select_quiz_principle(company_id: int = None):
          return quiz_list
      
      
-def select_quiz_culture(company_id: int = None):
+def select_quiz_id_culture(company_id: int = None):
 
     connection, cursor = connect_database()
 
     if company_id:
 
         query = f"""
-        SELECT q.* FROM Quiz q
+        SELECT q.id FROM Quiz q
         left join Game g on g.id = q.game_id 
         left join GamifiedJourney gj on gj.id = g.gamified_journey_id 
         left join Company c on c.id = gj.company_id 
@@ -167,6 +167,42 @@ def select_next_quiz_id(employee_id: int, quizzes_completed: tuple):
         connection.close()
 
         return quizzes_id["id"]
+
+
+def select_quiz_alternative_id(quiz_id: int):
+
+    connection, cursor = connect_database()
+
+    query1 = f"""
+    SELECT q.* FROM Quiz q RIGHT JOIN Game g ON q.game_id = g.id
+    RIGHT JOIN GamifiedJourney gj ON g.gamified_journey_id = gj.id
+    RIGHT JOIN Company c ON gj.company_id = c.id
+    WHERE q.id = {quiz_id};
+    """
+
+    query2 = f"""
+    SELECT a.* FROM Alternative a 
+    RIGHT JOIN Quiz q ON a.quiz_id = q.id
+    RIGHT JOIN Game g ON q.game_id = g.id
+    RIGHT JOIN GamifiedJourney gj ON g.gamified_journey_id = gj.id
+    RIGHT JOIN Company c ON gj.company_id = c.id
+    WHERE q.id = {quiz_id};
+    """
+
+    try:
+        cursor.execute(query1)
+        quiz = cursor.fetchone()
+        cursor.execute(query2)
+        alternatives = cursor.fetchall()
+    except Exception as error:
+        connection.close()
+        return None
+    else:
+        quiz["alternatives"] = alternatives
+
+        connection.close()
+
+        return quiz
 
 
 def select_next_quiz(quiz_id: int):
@@ -466,7 +502,7 @@ def get_max_score(game_id: int):
         return max_score_value
 
 
-def verify_if_game_id_exists(quiz: Quiz = None, game_id: int = None):
+def verify_if_game_id_exists_quiz(quiz: Quiz = None, game_id: int = None):
 
     connection, cursor = connect_database()
 
@@ -496,6 +532,7 @@ def verify_if_game_id_exists(quiz: Quiz = None, game_id: int = None):
 
     else:
         game_id_exists = cursor.fetchone()
+
         connection.close()
 
         return game_id_exists

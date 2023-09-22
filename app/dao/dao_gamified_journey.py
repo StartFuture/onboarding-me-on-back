@@ -83,3 +83,28 @@ def delete_video(company_id: int):
         connection.close()
         
         return True
+
+
+def select_gamified_journey_id_by_company(company_id: int):
+
+    connection, cursor = connect_database()
+
+    query = f"""
+    SELECT id FROM GamifiedJourney gj
+    WHERE gj.company_id = {company_id};
+    """
+
+    try:
+        cursor.execute(query)
+    
+    except Exception as error:
+        connection.close()
+
+        return None
+    
+    else:
+        gamified_journey_id = cursor.fetchone()
+
+        connection.close()
+
+        return gamified_journey_id["id"]
