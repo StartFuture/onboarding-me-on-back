@@ -12,7 +12,7 @@ from app.routers.medal import router as router_medal
 from app.routers.authentication import router as router_login
 from app.routers.password_edit import router as router_password_edit
 from app.routers.address import router as router_address
-
+from app.routers.health_check import router as router_health_check
 
 app = FastAPI()
 
@@ -25,7 +25,7 @@ origins = [
     "http://localhost:3000",
     "http://localhost:3001/",
     "http://localhost:3000/",
-    
+    "https://onboarding-on.startfuture.com.br"
 ]
 
 
@@ -49,3 +49,4 @@ app.include_router(router=router_employee)
 app.include_router(router=router_address)
 app.include_router(router=track_kit)
 app.include_router(router=router_welcome_kit)
+app.include_router(router=router_health_check)
