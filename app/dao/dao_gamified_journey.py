@@ -8,6 +8,7 @@ def select_video_company(company_id: int):
     SELECT welcome_video_link, company_id from GamifiedJourney
 	WHERE company_id = '{company_id}';
     """
+    
 
     try:
         cursor.execute(query)
@@ -26,6 +27,13 @@ def insert_video_company(company_id: int, link: str):
     
     connection, cursor = connect_database()
     
+    video_exists = verify_video_company_exists(company_id)
+    
+    if video_exists:
+        modify_video_company(company_id=company_id, new_link=link)
+        return True
+
+    
     query = f"""
     INSERT INTO GamifiedJourney
     (welcome_video_link, company_id) 
@@ -33,6 +41,7 @@ def insert_video_company(company_id: int, link: str):
     ('{link}', '{company_id}')
     ;
     """
+    
     try:
         cursor.execute(query)
     except Exception as error:
@@ -41,6 +50,7 @@ def insert_video_company(company_id: int, link: str):
         connection.commit()
         connection.close()
         return True
+    
 
 def modify_video_company(company_id: int, new_link: str):
     
@@ -108,3 +118,26 @@ def select_gamified_journey_id_by_company(company_id: int):
         connection.close()
 
         return gamified_journey_id["id"]
+    
+
+def verify_video_company_exists(company_id: int):
+    
+    connection, cursor = connect_database()
+    
+    query = f"""
+    SELECT welcome_video_link, company_id from GamifiedJourney
+	WHERE company_id = '{company_id}';
+    """
+
+    try:
+        cursor.execute(query)
+    except Exception as error:
+        connection.close()
+        return False
+    else:
+        company_exists = cursor.fetchone()
+        
+        if company_exists:
+            return True
+
+    return False
