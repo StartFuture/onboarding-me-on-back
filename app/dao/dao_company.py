@@ -35,7 +35,7 @@ def select_company_health_jwt(company_id: int):
     connection, cursor = connect_database()
     
     query = f"""
-    SELECT company_name, trading_name, logo, cnpj, email, state_register
+    SELECT id, company_name, trading_name, logo, cnpj, email, state_register
     from Company c 
     WHERE id = {company_id}
     ;
